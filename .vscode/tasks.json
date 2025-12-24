@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "npm run build"
+    },
+    {
+      "type": "npm",
+      "script": "build:server",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build:server",
+      "detail": "npm run build:server"
+    },
+    {
+      "type": "npm",
+      "script": "build:extension",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build:extension",
+      "detail": "npm run build:extension"
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch",
+      "label": "npm: watch",
+      "detail": "npm run watch"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+/**
+ * Base styles shared across all components
+ * Matches VSCode's native webview styling
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  font-weight: normal;
+  padding: 0;
+  margin: 0;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  line-height: 1.4;
+  overflow: hidden;
+}

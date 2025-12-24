@@ -1,0 +1,27 @@
+{
+  "name": "@mcp-codereview/server",
+  "version": "1.0.0",
+  "description": "MCP Code Review Server",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-codereview-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "sql.js": "^1.13.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.25",
+    "@types/sql.js": "^1.4.9",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.3"
+  }
+}

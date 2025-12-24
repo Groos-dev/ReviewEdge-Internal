@@ -1,0 +1,157 @@
+/**
+ * Common reusable styles
+ * Matches VSCode's native component styles
+ */
+
+/* Buttons - Match VSCode button styles */
+.btn {
+  padding: 4px 14px;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  font-size: var(--vscode-font-size);
+  font-weight: 400;
+  text-align: center;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  transition:
+    background-color 0.1s,
+    outline-color 0.1s;
+}
+
+.btn:focus {
+  outline-color: var(--vscode-focusBorder);
+}
+
+.btn-primary {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.btn-primary:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.btn-primary:active {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.btn-secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+
+.btn-secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-secondary:active {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--vscode-font-size);
+  padding: 4px;
+  color: var(--vscode-icon-foreground, var(--vscode-foreground));
+  opacity: 0.7;
+  transition:
+    opacity 0.1s,
+    background-color 0.1s;
+  border-radius: 3px;
+}
+
+.btn-icon:hover {
+  opacity: 1;
+  background-color: var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground));
+}
+
+.btn-icon:active {
+  background-color: var(
+    --vscode-toolbar-activeBackground,
+    var(--vscode-list-activeSelectionBackground)
+  );
+}
+
+.btn-icon-sm {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  color: var(--vscode-icon-foreground, var(--vscode-foreground));
+  opacity: 0.6;
+  transition:
+    opacity 0.1s,
+    background-color 0.1s;
+  border-radius: 2px;
+}
+
+.btn-icon-sm:hover:not(:disabled) {
+  opacity: 1;
+  background-color: var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground));
+}
+
+.btn-icon-sm:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-icon-sm.danger:hover:not(:disabled) {
+  color: var(--vscode-errorForeground, #f48771);
+}
+
+/* Badges - Match VSCode badge styles */
+.badge {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  padding: 3px 5px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  display: inline-block;
+}
+
+.branch-tag {
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: var(--vscode-editor-font-family, "Courier New", monospace);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.commit-tag {
+  background: var(--vscode-textCodeBlock-background);
+  color: var(--vscode-foreground);
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-family: var(--vscode-editor-font-family, "Courier New", monospace);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Loading and empty states - Match VSCode empty state styles */
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+  font-size: var(--vscode-font-size);
+}
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--vscode-descriptionForeground);
+  font-size: var(--vscode-font-size);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}

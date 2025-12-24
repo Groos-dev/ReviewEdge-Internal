@@ -1,0 +1,115 @@
+{
+  "name": "mcp-codereview",
+  "displayName": "MCP Code Review",
+  "description": "AI-powered code review using Model Context Protocol. Render review comments directly in VS Code diff views.",
+  "version": "1.0.0",
+  "publisher": "mcp-codereview",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcp-codereview/mcp-codereview"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "code review",
+    "mcp",
+    "ai",
+    "typescript",
+    "cursor",
+    "diff",
+    "git"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mcp-codereview",
+          "title": "MCP Review",
+          "icon": "$(code)"
+        }
+      ]
+    },
+    "views": {
+      "mcp-codereview": [
+        {
+          "id": "mcpCodeReview.sidebarView",
+          "name": "CODEREVIEW",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "mcpCodeReview.renderComments",
+        "title": "MCP: Render Review Comments"
+      },
+      {
+        "command": "mcpCodeReview.clearReviews",
+        "title": "MCP: Clear Review Comments"
+      }
+    ],
+    "configuration": {
+      "title": "MCP Code Review",
+      "properties": {
+        "mcpCodeReview.mainBranch": {
+          "type": "string",
+          "default": "main",
+          "description": "The main branch name for this repository (e.g., main, master, develop)"
+        },
+        "mcpCodeReview.severityLevel": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "critical"
+          ],
+          "default": "info",
+          "description": "Minimum severity level to show"
+        },
+        "mcpCodeReview.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to MCP server (optional, auto-detected by default)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "npm run build:server && npm run build:ui && npm run build:extension && npm run copy:server && npm run copy:ui",
+    "build:server": "npm run build --workspace=../server",
+    "build:ui": "npm run build --workspace=../ui",
+    "build:extension": "tsup src/extension.ts --format cjs --platform node --target node20 --external vscode --dts",
+    "copy:server": "node ./scripts/copy-server.mjs",
+    "copy:ui": "node ./scripts/copy-ui.mjs",
+    "watch": "npm run build:extension -- --watch",
+    "package": "npm run build && vsce package --no-dependencies",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "@types/vscode": "^1.74.0",
+    "@vscode/vsce": "^3.2.1",
+    "tsup": "^8.4.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@types/prismjs": "^1.26.5",
+    "prismjs": "^1.30.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

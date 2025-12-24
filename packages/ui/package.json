@@ -1,0 +1,22 @@
+{
+  "name": "@mcp-codereview/ui",
+  "version": "1.0.0",
+  "description": "UI components for MCP Code Review",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "tsup": "^8.4.0",
+    "typescript": "^5.4.0"
+  }
+}
