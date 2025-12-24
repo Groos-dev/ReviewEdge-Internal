@@ -65,6 +65,14 @@ export class CodeReviewCore {
       return { task: newTask };
     });
 
+    this.messenger.on('task/update', async (msg: Message<ToServerProtocol['task/update']>) => {
+      const { taskId, task, workspacePath } = msg.data;
+      await this.ensureInitialized(workspacePath);
+      const updatedTask = await taskReader.updateTask(taskId, task);
+      taskReader.close();
+      return { task: updatedTask };
+    });
+
     this.messenger.on('task/delete', async (msg: Message<ToServerProtocol['task/delete']>) => {
       const { taskId, workspacePath } = msg.data;
       await this.ensureInitialized(workspacePath);

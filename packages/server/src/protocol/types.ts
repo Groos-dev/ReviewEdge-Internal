@@ -71,6 +71,10 @@ export interface ToServerProtocol {
     taskId: string;
     task: {
       name?: string;
+      baseBranch?: string;
+      baseCommit?: string;
+      headBranch?: string;
+      headCommit?: string;
       workflowId?: string | null;
     };
     workspacePath: string;

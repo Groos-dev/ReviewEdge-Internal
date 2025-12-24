@@ -240,6 +240,50 @@ export class TaskReader {
     }
   }
 
+  async updateTask(
+    taskId: string,
+    updates: Partial<
+      Pick<ReviewTask, 'name' | 'baseBranch' | 'baseCommit' | 'headBranch' | 'headCommit'>
+    >
+  ): Promise<ReviewTask | null> {
+    if (!this.db) return null;
+
+    try {
+      const currentTask = await this.getTask(taskId);
+      if (!currentTask) {
+        console.error('[TaskReader] Task not found:', taskId);
+        return null;
+      }
+
+      const updatedTask: ReviewTask = {
+        ...currentTask,
+        ...updates,
+        updatedAt: Date.now(),
+      };
+
+      this.db.run(
+        `UPDATE tasks
+         SET name = ?, baseBranch = ?, baseCommit = ?, headBranch = ?, headCommit = ?, workflowId = ?, updatedAt = ?
+         WHERE id = ?`,
+        [
+          updatedTask.name,
+          updatedTask.baseBranch,
+          updatedTask.baseCommit,
+          updatedTask.headBranch,
+          updatedTask.headCommit,
+          updatedTask.workflowId,
+          updatedTask.updatedAt,
+          taskId,
+        ]
+      );
+      this.save();
+      return updatedTask;
+    } catch (error) {
+      console.error('[TaskReader] Failed to update task:', error);
+      return null;
+    }
+  }
+
   async deleteTask(taskId: string): Promise<boolean> {
     if (!this.db) return false;
 

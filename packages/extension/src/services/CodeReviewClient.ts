@@ -36,6 +36,26 @@ export class CodeReviewClient {
     return (response.task as ReviewTask) ?? null;
   }
 
+  async updateTask(
+    taskId: string,
+    updates: {
+      name?: string;
+      baseBranch?: string;
+      baseCommit?: string;
+      headBranch?: string;
+      headCommit?: string;
+      workflowId?: string | null;
+    },
+    workspacePath: string
+  ): Promise<ReviewTask | null> {
+    const response = await this.messenger.request('task/update', {
+      taskId,
+      task: updates,
+      workspacePath,
+    });
+    return (response.task as ReviewTask) ?? null;
+  }
+
   async deleteTask(taskId: string, workspacePath: string): Promise<boolean> {
     const response = await this.messenger.request('task/delete', { taskId, workspacePath });
     return response.success ?? false;

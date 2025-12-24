@@ -86,9 +86,27 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           break;
         case 'deleteTask': {
           const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-          if (workspacePath) {
+          if (!workspacePath) {
+            vscode.window.showErrorMessage('No workspace folder found');
+            break;
+          }
+
+          const task = await this.client.getTask(message.id, workspacePath);
+          if (!task) {
+            vscode.window.showErrorMessage(`Task not found: ${message.id}`);
+            break;
+          }
+
+          const confirm = await vscode.window.showWarningMessage(
+            `Delete task "${task.name}" and all its review comments?`,
+            { modal: true },
+            'Delete'
+          );
+
+          if (confirm === 'Delete') {
             await this.client.deleteTask(message.id, workspacePath);
             this.refresh();
+            vscode.window.showInformationMessage(`Task deleted: ${task.name}`);
           }
           break;
         }

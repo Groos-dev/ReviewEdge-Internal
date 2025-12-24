@@ -270,8 +270,62 @@ export class TaskService {
 
       if (!editChoice) return;
 
-      vscode.window.showInformationMessage('Edit task functionality - implementation pending');
+      const updates: {
+        name?: string;
+        baseBranch?: string;
+        baseCommit?: string;
+        headBranch?: string;
+        headCommit?: string;
+      } = {};
+
+      if (editChoice.value === 'name') {
+        const newName = await vscode.window.showInputBox({
+          prompt: 'Enter new task name',
+          value: task.name,
+          validateInput: (value) => (value.trim() ? null : 'Name cannot be empty'),
+        });
+        if (!newName) return;
+        updates.name = newName.trim();
+      } else if (editChoice.value === 'base') {
+        // Select base branch
+        const branches = await this.gitService.getBranches(workspacePath);
+        const baseBranch = await vscode.window.showQuickPick(branches, {
+          placeHolder: 'Select base branch',
+          title: 'Edit Base Branch',
+        });
+        if (!baseBranch) return;
+
+        // Select base commit
+        const baseCommit = await this.selectCommit(workspacePath, baseBranch, 'Edit Base Commit');
+        if (!baseCommit) return;
+
+        updates.baseBranch = baseBranch;
+        updates.baseCommit = baseCommit.hash;
+      } else if (editChoice.value === 'head') {
+        // Select head branch
+        const branches = await this.gitService.getBranches(workspacePath);
+        const headBranch = await vscode.window.showQuickPick(branches, {
+          placeHolder: 'Select head branch',
+          title: 'Edit Head Branch',
+        });
+        if (!headBranch) return;
+
+        // Select head commit
+        const headCommit = await this.selectCommit(workspacePath, headBranch, 'Edit Head Commit');
+        if (!headCommit) return;
+
+        updates.headBranch = headBranch;
+        updates.headCommit = headCommit.hash;
+      }
+
+      const updatedTask = await client.updateTask(taskId, updates, workspacePath);
+      if (!updatedTask) {
+        vscode.window.showErrorMessage('Failed to update task');
+        return;
+      }
+
       sidebarProvider.refresh();
+      vscode.window.showInformationMessage(`Task updated: ${updatedTask.name}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`Failed to edit task: ${message}`);
@@ -331,10 +385,25 @@ export class TaskService {
 
       if (!selected) return;
 
-      vscode.window.showInformationMessage(
-        'Select workflow functionality - implementation pending'
+      const updatedTask = await client.updateTask(
+        taskId,
+        {
+          workflowId: selected.workflow?.id || null,
+        },
+        workspacePath
       );
+
+      if (!updatedTask) {
+        vscode.window.showErrorMessage('Failed to update task workflow');
+        return;
+      }
+
       sidebarProvider.refresh();
+
+      const message = selected.workflow
+        ? `Workflow "${selected.workflow.name}" selected for task`
+        : 'Workflow removed from task';
+      vscode.window.showInformationMessage(message);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       vscode.window.showErrorMessage(`Failed to select workflow: ${message}`);
