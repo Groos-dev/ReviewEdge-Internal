@@ -116,7 +116,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           await this._runTask(message.id);
           break;
         case 'viewTaskDiff':
-          console.log('[SidebarProvider] viewTaskDiff received, id:', message.id);
           await vscode.commands.executeCommand('mcpCodeReview.viewTaskDiff', message.id);
           break;
         case 'openSettings':
@@ -278,10 +277,26 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         'mcpConfigInstructions',
         'MCP Server Configuration',
         vscode.ViewColumn.One,
-        {}
+        {
+          enableScripts: true,
+          localResourceRoots: [vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview')],
+        }
       );
 
-      panel.webview.html = this._getMcpInstructionsHtml(configJson, serverPath);
+      panel.webview.html = this._getMcpSetupWebviewHtml(panel.webview, configJson, serverPath);
+
+      // Handle messages from the webview
+      panel.webview.onDidReceiveMessage(async (message) => {
+        if (message.command === 'ready') {
+          panel.webview.postMessage({
+            command: 'initialize',
+            data: { configJson, serverPath },
+          });
+        } else if (message.command === 'copyConfig') {
+          await vscode.env.clipboard.writeText(configJson);
+          vscode.window.showInformationMessage('配置已复制到剪贴板！');
+        }
+      });
     }
   }
 
@@ -315,123 +330,52 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private _getMcpInstructionsHtml(configJson: string, serverPath: string): string {
+  private _getMcpSetupWebviewHtml(
+    webview: vscode.Webview,
+    _configJson: string,
+    _serverPath: string
+  ): string {
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'mcpsetup', 'index.js')
+    );
+
+    const assetsDir = vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'assets');
+    const fs = require('node:fs');
+    let cssUri = '';
+
+    try {
+      if (fs.existsSync(assetsDir.fsPath)) {
+        const files = fs.readdirSync(assetsDir.fsPath);
+        const cssFile = files.find(
+          (file: string) => file.startsWith('ui-') && file.endsWith('.css')
+        );
+        if (cssFile) {
+          cssUri = webview.asWebviewUri(vscode.Uri.joinPath(assetsDir, cssFile)).toString();
+        }
+      }
+    } catch (error) {
+      console.error('[SidebarProvider] Failed to read CSS file:', error);
+    }
+
+    const codiconsUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'codicons', 'codicon.css')
+    );
+
     return `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource};">
   <title>MCP Server Configuration</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      padding: 20px;
-      max-width: 800px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-    h1 { color: #007acc; }
-    h2 { color: #333; margin-top: 30px; }
-    pre {
-      background: #f5f5f5;
-      padding: 15px;
-      border-radius: 5px;
-      overflow-x: auto;
-      border: 1px solid #ddd;
-    }
-    code {
-      background: #f5f5f5;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: 'Courier New', monospace;
-    }
-    .step {
-      margin: 20px 0;
-      padding: 15px;
-      background: #f9f9f9;
-      border-left: 4px solid #007acc;
-    }
-    .note {
-      background: #fff3cd;
-      padding: 10px;
-      border-radius: 5px;
-      border-left: 4px solid #ffc107;
-      margin: 15px 0;
-    }
-    button {
-      background: #007acc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    button:hover {
-      background: #005a9e;
-    }
-  </style>
+  <link rel="stylesheet" href="${codiconsUri}">
+  ${cssUri ? `<link rel="stylesheet" href="${cssUri}">` : ''}
 </head>
 <body>
-  <h1>🔧 MCP Server Configuration</h1>
-
-  <div class="note">
-    <strong>📋 配置已准备就绪！</strong> 按照以下步骤将 MCP Server 添加到 Cursor。
-  </div>
-
-  <div class="step">
-    <h2>步骤 1: 复制配置</h2>
-    <p>点击下方按钮复制配置到剪贴板：</p>
-    <button onclick="copyConfig()">📋 复制配置</button>
-    <pre id="config">${this._escapeHtml(configJson)}</pre>
-  </div>
-
-  <div class="step">
-    <h2>步骤 2: 打开 Cursor MCP 设置</h2>
-    <p>在 Cursor 中：</p>
-    <ol>
-      <li>打开 <code>Cursor Settings</code> (⌘+, 或 Ctrl+,)</li>
-      <li>导航到 <code>Features → MCP</code></li>
-      <li>或直接搜索 "MCP"</li>
-    </ol>
-  </div>
-
-  <div class="step">
-    <h2>步骤 3: 添加配置</h2>
-    <p>将复制的配置粘贴到 MCP Settings 的 JSON 配置中。</p>
-  </div>
-
-  <div class="step">
-    <h2>步骤 4: 重启 Cursor</h2>
-    <p>重启 Cursor 以使配置生效。</p>
-  </div>
-
-  <div class="note">
-    <strong>💡 提示：</strong> Server 路径为 <code>${this._escapeHtml(serverPath)}</code>
-  </div>
-
-  <h2>验证安装</h2>
-  <p>在 Cursor 的聊天窗口中，输入 <code>@</code> 并查看是否出现 MCP 工具（如 <code>codereview</code>、<code>add_review_comment</code> 等）。</p>
-
-  <script>
-    function copyConfig() {
-      const config = document.getElementById('config').textContent;
-      navigator.clipboard.writeText(config).then(() => {
-        alert('配置已复制到剪贴板！');
-      });
-    }
-  </script>
+  <div id="root"></div>
+  <script type="module" src="${scriptUri}"></script>
 </body>
 </html>`;
-  }
-
-  private _escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {

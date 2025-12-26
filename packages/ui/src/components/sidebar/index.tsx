@@ -42,6 +42,11 @@ const BUILTIN_WORKFLOW_IDS = {
   PERFORMANCE: 'performance',
   IDIOMATIC: 'idiomatic',
   FULL_REVIEW: 'full-review',
+  // Java-specific workflows
+  JAVA_CODE_STYLE: 'java-code-style',
+  JAVA_CONCURRENCY: 'java-concurrency',
+  JAVA_RESOURCE: 'java-resource',
+  JAVA_FULL_REVIEW: 'java-full-review',
 } as const;
 
 const BUILTIN_WORKFLOW_ID_LIST = Object.values(BUILTIN_WORKFLOW_IDS);
@@ -244,33 +249,28 @@ const TasksView: FC<TasksViewProps> = ({ tasks, workflows, sendMessage }) => {
               <div className="task-meta">
                 <span className="commit-hash">{task.headCommit.substring(0, 7)}</span>
                 <span className="meta-separator">•</span>
-                {workflow ? (
-                  <button
-                    type="button"
-                    className="workflow-link"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sendMessage('openWorkflow', workflow.id);
-                    }}
-                    title="View workflow"
-                  >
-                    <Icon name="pass-filled" className="workflow-icon active" />
-                    <span>{workflow.name}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="workflow-link empty"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      sendMessage('selectWorkflowForTask', task.id);
-                    }}
-                    title="Select workflow"
-                  >
-                    <Icon name="error" className="workflow-icon" />
-                    <span>No workflow</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`workflow-selector ${workflow ? '' : 'empty'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    sendMessage('selectWorkflowForTask', task.id);
+                  }}
+                  title={workflow ? 'Change workflow' : 'Select workflow'}
+                >
+                  {workflow ? (
+                    <>
+                      <Icon name="pass-filled" className="workflow-icon default-icon" />
+                      <Icon name="replace" className="workflow-icon hover-icon" />
+                      <span>{workflow.name}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="add" className="workflow-icon" />
+                      <span>Select workflow</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

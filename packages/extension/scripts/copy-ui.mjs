@@ -22,7 +22,7 @@ if (fs.existsSync(destDir)) {
 fs.mkdirSync(destDir, { recursive: true });
 
 // Copy JS entry files for each view
-const views = ['sidebar', 'diffviewer', 'workflow'];
+const views = ['sidebar', 'diffviewer', 'workflow', 'mcpsetup'];
 
 for (const view of views) {
   const viewDest = path.join(destDir, view);

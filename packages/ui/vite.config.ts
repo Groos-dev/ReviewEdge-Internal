@@ -17,6 +17,7 @@ export default defineConfig({
         sidebar: path.resolve(__dirname, 'src/components/sidebar/index.tsx'),
         diffviewer: path.resolve(__dirname, 'src/components/diffviewer/index.tsx'),
         workflow: path.resolve(__dirname, 'src/components/workflow/index.tsx'),
+        mcpsetup: path.resolve(__dirname, 'src/components/mcpsetup/index.tsx'),
       },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}/index.js`,

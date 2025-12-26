@@ -362,7 +362,15 @@ export class TaskService {
         return;
       }
 
-      const items = workflows.map((w) => ({
+      type QuickPickItem = {
+        label: string;
+        description?: string;
+        detail?: string;
+        workflow: (typeof workflows)[0] | null;
+        action?: 'configure';
+      };
+
+      const items: QuickPickItem[] = workflows.map((w) => ({
         label: w.id === task.workflowId ? `$(check) ${w.name}` : w.name,
         description: `${w.nodes.length} step(s)`,
         detail: w.description || undefined,
@@ -374,9 +382,17 @@ export class TaskService {
           label: '$(close) Remove workflow',
           description: 'Run task without workflow',
           detail: undefined,
-          workflow: null as any,
+          workflow: null,
         });
       }
+
+      // Add separator and configure option
+      items.push({
+        label: '$(gear) Configure Workflows...',
+        description: 'Create or edit workflows',
+        workflow: null,
+        action: 'configure',
+      });
 
       const selected = await vscode.window.showQuickPick(items, {
         placeHolder: 'Select a workflow for this task',
@@ -384,6 +400,12 @@ export class TaskService {
       });
 
       if (!selected) return;
+
+      // Handle configure action
+      if (selected.action === 'configure') {
+        await vscode.commands.executeCommand('mcpCodeReview.createWorkflow');
+        return;
+      }
 
       const updatedTask = await client.updateTask(
         taskId,

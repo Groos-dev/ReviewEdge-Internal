@@ -69,25 +69,19 @@ export async function viewTaskDiff(
   taskId: string,
   diffViewerProvider: DiffViewerProvider | null
 ): Promise<void> {
-  console.log('[viewTaskDiff] Called with taskId:', taskId);
-
   const workspacePath = getWorkspacePathOrShowError();
   if (!workspacePath) {
-    console.log('[viewTaskDiff] No workspace path');
     return;
   }
 
   if (!diffViewerProvider) {
-    console.log('[viewTaskDiff] No diffViewerProvider');
     vscode.window.showErrorMessage(ERROR_MESSAGES.DIFF_VIEWER_NOT_INITIALIZED);
     return;
   }
 
   let task: Awaited<ReturnType<typeof client.getTask>> | undefined;
   try {
-    console.log('[viewTaskDiff] Getting task...');
     task = await client.getTask(taskId, workspacePath);
-    console.log('[viewTaskDiff] Got task:', task);
   } catch (error) {
     console.error('[viewTaskDiff] Error getting task:', error);
     vscode.window.showErrorMessage(ERROR_MESSAGES.FAILED_TO_LOAD_TASK);
@@ -95,14 +89,11 @@ export async function viewTaskDiff(
   }
 
   if (!task) {
-    console.log('[viewTaskDiff] Task not found');
     vscode.window.showErrorMessage(ERROR_MESSAGES.TASK_NOT_FOUND);
     return;
   }
 
-  console.log('[viewTaskDiff] Showing diff...');
   await diffViewerProvider.showDiff(task, workspacePath);
-  console.log('[viewTaskDiff] Done');
 }
 
 /**

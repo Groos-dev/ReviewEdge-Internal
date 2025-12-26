@@ -23,75 +23,6 @@ interface DiffResponse {
   comments: ReviewComment[];
 }
 
-// Mock comments for testing.
-// TODO(refactor): Remove mock comments from production code paths or gate behind a user setting.
-//   Current behavior can render fake comments and hide real integration issues.
-const USE_MOCK_COMMENTS = true;
-
-function generateMockComments(files: DiffFileData[], taskId: string): ReviewComment[] {
-  if (!USE_MOCK_COMMENTS || files.length === 0) {
-    return [];
-  }
-
-  const mockComments: ReviewComment[] = [];
-  const severities: Array<'INFO' | 'WARNING' | 'CRITICAL'> = ['INFO', 'WARNING', 'CRITICAL'];
-  const categories = ['Security', 'Performance', 'Code Style', 'Best Practices', 'Bug'];
-
-  const mockMessages = [
-    {
-      comment: 'Consider using const instead of let for immutable variables.',
-      suggestion: 'const value = getData();',
-    },
-    {
-      comment:
-        'This function has high cyclomatic complexity. Consider breaking it into smaller functions.',
-      suggestion: undefined,
-    },
-    {
-      comment: 'Potential SQL injection vulnerability. Use parameterized queries.',
-      suggestion: 'db.query("SELECT * FROM users WHERE id = ?", [userId])',
-    },
-    {
-      comment: 'Missing error handling for async operation.',
-      suggestion: 'try {\n  await fetchData();\n} catch (error) {\n  handleError(error);\n}',
-    },
-    { comment: 'This variable is declared but never used.', suggestion: undefined },
-    {
-      comment: 'Consider adding input validation here.',
-      suggestion:
-        'if (!input || typeof input !== "string") {\n  throw new Error("Invalid input");\n}',
-    },
-  ];
-
-  // Generate 1-3 comments for each file
-  for (const file of files) {
-    const filePath = file.newPath || file.oldPath;
-    if (!filePath) continue;
-
-    const commentCount = Math.floor(Math.random() * 3) + 1;
-    for (let i = 0; i < commentCount; i++) {
-      const msgIndex = Math.floor(Math.random() * mockMessages.length);
-      const msg = mockMessages[msgIndex];
-      const severity = severities[Math.floor(Math.random() * severities.length)];
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      if (!msg || !severity || !category) continue;
-      mockComments.push({
-        id: `mock-${filePath}-${i}`,
-        taskId,
-        filePath,
-        line: Math.floor(Math.random() * 50) + 1,
-        severity,
-        category,
-        comment: msg.comment,
-        suggestion: msg.suggestion,
-        createdAt: Date.now(),
-      });
-    }
-  }
-
-  return mockComments;
-}
-
 const EXTENSION_LANG_MAP: Record<string, string> = {
   ts: 'typescript',
   tsx: 'tsx',
@@ -246,7 +177,7 @@ export class DiffViewerProvider {
       }
 
       // Parse diff output and include comments
-      const diffData = await this._parseDiff(diffOutput, comments, task.id, workspacePath);
+      const diffData = await this._parseDiff(diffOutput, comments, workspacePath);
 
       console.log(
         `[DiffViewerProvider] Loaded ${diffData.files.length} files, ${diffData.comments.length} comments`
@@ -269,7 +200,6 @@ export class DiffViewerProvider {
   private async _parseDiff(
     diffOutput: string,
     comments: ReviewComment[],
-    taskId: string,
     workspacePath: string
   ): Promise<DiffResponse> {
     const files: DiffFileData[] = [];
@@ -342,11 +272,7 @@ export class DiffViewerProvider {
       );
     }
 
-    // Use mock comments if enabled and no real comments exist
-    const finalComments =
-      USE_MOCK_COMMENTS && comments.length === 0 ? generateMockComments(files, taskId) : comments;
-
-    return { files, comments: finalComments };
+    return { files, comments };
   }
 
   private _getHtmlForWebview(webview: vscode.Webview): string {
