@@ -407,6 +407,11 @@ const WorkflowHeader: FC<WorkflowHeaderProps> = ({
 }) => (
   <div className="workflow-header">
     <div className="workflow-info">
+      {isReadonly && (
+        <span className="readonly-lock" title="Read-only system workflow">
+          <i className="codicon codicon-lock" />
+        </span>
+      )}
       {isReadonly ? (
         <h2>{workflow.name}</h2>
       ) : (
@@ -418,18 +423,16 @@ const WorkflowHeader: FC<WorkflowHeaderProps> = ({
           placeholder="Workflow Name"
         />
       )}
-      {isReadonly && <span className="readonly-badge">🔒 Read-Only</span>}
     </div>
     <div className="header-actions">
       {isReadonly && (
         <button
           type="button"
-          className="btn btn-secondary"
+          className="header-action-btn"
           onClick={onDuplicate}
-          title="Create an editable copy of this workflow"
+          title="Duplicate to Edit"
         >
-          <span className="btn-icon">📋</span>
-          Duplicate to Edit
+          <i className="codicon codicon-copy" />
         </button>
       )}
     </div>
