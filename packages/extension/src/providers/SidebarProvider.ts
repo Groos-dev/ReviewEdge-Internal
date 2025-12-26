@@ -145,16 +145,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
 
     if (!task.workflowId) {
-      vscode.window.showWarningMessage('请先为此任务选择一个 Workflow');
+      vscode.window.showWarningMessage('Please select a workflow for this task first');
       return;
     }
 
-    const instruction = `使用 codereview 工具开始代码评审，参数：taskId="${taskId}", step=0, workspacePath="${workspacePath}"`;
+    const instruction = `Use the codereview tool to start code review with parameters: taskId="${taskId}", step=0, workspacePath="${workspacePath}"`;
 
     await vscode.env.clipboard.writeText(instruction);
 
     vscode.window.showInformationMessage(
-      '已复制指令到剪贴板，请在 Cursor 中粘贴执行以开始评审',
+      'Instructions copied to clipboard. Paste in Cursor to start the review.',
       'OK'
     );
   }
@@ -262,7 +262,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const configJson = JSON.stringify(config, null, 2);
 
     const action = await vscode.window.showInformationMessage(
-      'MCP Server 配置已生成。请将以下配置添加到 Cursor 的 MCP Settings 中。',
+      'MCP Server configuration generated. Add it to Cursor MCP Settings.',
       'Copy Config',
       'Show Instructions'
     );
@@ -270,7 +270,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     if (action === 'Copy Config') {
       await vscode.env.clipboard.writeText(configJson);
       vscode.window.showInformationMessage(
-        '配置已复制到剪贴板！请在 Cursor Settings → Features → MCP 中添加。'
+        'Config copied to clipboard! Add it in Cursor Settings → Features → MCP.'
       );
     } else if (action === 'Show Instructions') {
       const panel = vscode.window.createWebviewPanel(
@@ -294,7 +294,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           });
         } else if (message.command === 'copyConfig') {
           await vscode.env.clipboard.writeText(configJson);
-          vscode.window.showInformationMessage('配置已复制到剪贴板！');
+          vscode.window.showInformationMessage('Config copied to clipboard!');
         }
       });
     }

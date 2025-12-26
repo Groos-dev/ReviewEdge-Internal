@@ -116,7 +116,9 @@ export class DiffViewerProvider {
       if (side === 'old') {
         // TODO: Implement old side navigation with TextDocumentContentProvider
         // to show historical version of the file
-        vscode.window.showInformationMessage('跳转到历史版本功能开发中');
+        vscode.window.showInformationMessage(
+          'Navigation to historical version is not yet supported'
+        );
         return;
       }
 
@@ -127,7 +129,7 @@ export class DiffViewerProvider {
       try {
         await vscode.workspace.fs.stat(fullPath);
       } catch {
-        vscode.window.showWarningMessage(`文件不存在: ${filePath}`);
+        vscode.window.showWarningMessage(`File not found: ${filePath}`);
         return;
       }
 
@@ -151,7 +153,7 @@ export class DiffViewerProvider {
     } catch (error) {
       console.error('[DiffViewerProvider] Failed to navigate:', error);
       vscode.window.showErrorMessage(
-        `无法跳转到文件: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to navigate to file: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }

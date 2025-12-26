@@ -81,14 +81,23 @@ const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   },
   {
     name: 'add_review_comment',
-    description: 'Add a single review comment to a file. The comment will be rendered in VS Code.',
+    description:
+      'Add a single review comment to a file. The comment will be rendered in VS Code. ' +
+      'CRITICAL: The line number MUST be accurate and point to the EXACT line where the issue occurs. ' +
+      'Do NOT use class/function declaration line for issues inside the body. ' +
+      'For example, if a method parameter has an issue on line 42, use line 42, NOT the class definition line 1.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         taskId: { type: 'string', description: 'The review task ID' },
         workspacePath: { type: 'string', description: 'Path to the workspace' },
         filePath: { type: 'string', description: 'Relative path to the file' },
-        line: { type: 'number', description: 'Line number (1-based)' },
+        line: {
+          type: 'number',
+          description:
+            'Line number (1-based). MUST be the EXACT line where the issue occurs. ' +
+            'Never use approximate or parent scope line numbers.',
+        },
         severity: {
           type: 'string',
           enum: ['INFO', 'WARNING', 'CRITICAL'],
@@ -106,7 +115,10 @@ const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
   },
   {
     name: 'add_review_comments',
-    description: 'Add multiple review comments at once. Use this for batch adding comments.',
+    description:
+      'Add multiple review comments at once. Use this for batch adding comments. ' +
+      'CRITICAL: Each comment line number MUST be accurate and point to the EXACT line where the issue occurs. ' +
+      'Do NOT use class/function declaration line for issues inside the body.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -122,7 +134,11 @@ const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
                 type: 'string',
                 description: 'Relative path to the file',
               },
-              line: { type: 'number', description: 'Line number (1-based)' },
+              line: {
+                type: 'number',
+                description:
+                  'Line number (1-based). MUST be the EXACT line where the issue occurs.',
+              },
               severity: {
                 type: 'string',
                 enum: ['INFO', 'WARNING', 'CRITICAL'],

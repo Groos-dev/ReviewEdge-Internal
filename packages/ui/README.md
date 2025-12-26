@@ -1,88 +1,88 @@
 # MCP Code Review UI Package
 
-标准的 React + TypeScript + Vite 项目，为 VS Code 扩展提供 Webview UI 组件。
+Standard React + TypeScript + Vite project providing Webview UI components for the VS Code extension.
 
-## 项目结构
+## Project Structure
 
 ```
 packages/ui/
 ├── src/
-│   ├── components/       # React 组件
-│   │   ├── sidebar/     # 侧边栏视图
-│   │   ├── diffviewer/  # Diff 查看器
-│   │   └── workflow/    # 工作流编辑器
-│   ├── styles/          # CSS 样式文件
-│   ├── types/           # TypeScript 类型定义
-│   └── utils/           # 工具函数
-├── vite.config.ts       # Vite 构建配置
-├── tsconfig.json        # TypeScript 配置
+│   ├── components/       # React components
+│   │   ├── sidebar/     # Sidebar view
+│   │   ├── diffviewer/  # Diff viewer
+│   │   └── workflow/    # Workflow editor
+│   ├── styles/          # CSS style files
+│   ├── types/           # TypeScript type definitions
+│   └── utils/           # Utility functions
+├── vite.config.ts       # Vite build configuration
+├── tsconfig.json        # TypeScript configuration
 └── package.json
 ```
 
-## 技术栈
+## Tech Stack
 
-- **React 18.3** - UI 框架
-- **TypeScript 5.4** - 类型系统
-- **Vite 6.0** - 构建工具
-- **CSS** - 样式（使用 VS Code 主题变量）
+- **React 18.3** - UI framework
+- **TypeScript 5.4** - Type system
+- **Vite 6.0** - Build tool
+- **CSS** - Styles (using VS Code theme variables)
 
-## 构建配置
+## Build Configuration
 
 ### Vite Library Mode
 
-使用 Vite 的 Library Mode 将每个组件打包为独立的 ES 模块：
+Uses Vite's Library Mode to bundle each component as an independent ES module:
 
-- **入口点**: `sidebar/index.tsx`, `diffviewer/index.tsx`, `workflow/index.tsx`
-- **输出格式**: ES Module
-- **代码分割**:
-  - 每个组件有自己的 `[component]/index.js`
-  - React 和 react-dom 提取到 `chunks/common-[hash].js`
-  - 所有 CSS 合并到 `assets/ui-[hash].css`
+- **Entry points**: `sidebar/index.tsx`, `diffviewer/index.tsx`, `workflow/index.tsx`
+- **Output format**: ES Module
+- **Code splitting**:
+  - Each component has its own `[component]/index.js`
+  - React and react-dom extracted to `chunks/common-[hash].js`
+  - All CSS merged into `assets/ui-[hash].css`
 
-### 构建输出
+### Build Output
 
 ```
 dist/
 ├── sidebar/
-│   └── index.js          # 侧边栏组件
+│   └── index.js          # Sidebar component
 ├── diffviewer/
-│   └── index.js          # Diff 查看器组件
+│   └── index.js          # Diff viewer component
 ├── workflow/
-│   └── index.js          # 工作流编辑器组件
+│   └── index.js          # Workflow editor component
 ├── chunks/
-│   └── common-[hash].js  # 共享依赖（React）
+│   └── common-[hash].js  # Shared dependencies (React)
 └── assets/
-    └── ui-[hash].css     # 所有样式
+    └── ui-[hash].css     # All styles
 ```
 
-## 开发
+## Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发模式（监听文件变化）
+# Development mode (watch for file changes)
 npm run dev
 
-# 类型检查
+# Type checking
 npm run type-check
 
-# 构建生产版本
+# Build production version
 npm run build
 ```
 
-## 与 Extension 的集成
+## Integration with Extension
 
-Extension 包在构建时会：
+The Extension package during build will:
 
-1. 复制 `dist/` 中的所有文件到 `extension/dist/webview/`
-2. 在运行时动态生成 HTML，引用打包后的 JS 和 CSS
-3. 使用 VS Code Webview API 加载和显示 UI
+1. Copy all files from `dist/` to `extension/dist/webview/`
+2. Dynamically generate HTML at runtime, referencing the bundled JS and CSS
+3. Use VS Code Webview API to load and display the UI
 
-### HTML 生成示例
+### HTML Generation Example
 
 ```typescript
-// 在 SidebarProvider.ts 中
+// In SidebarProvider.ts
 private _getHtmlForWebview(webview: vscode.Webview): string {
   const scriptUri = webview.asWebviewUri(
     vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'sidebar', 'index.js')
@@ -104,9 +104,9 @@ private _getHtmlForWebview(webview: vscode.Webview): string {
 }
 ```
 
-## CSS 样式规范
+## CSS Style Guidelines
 
-使用 VS Code 提供的 CSS 变量，确保与编辑器主题一致：
+Use VS Code provided CSS variables to ensure consistency with editor theme:
 
 ```css
 .my-component {
@@ -116,16 +116,16 @@ private _getHtmlForWebview(webview: vscode.Webview): string {
 }
 ```
 
-常用变量：
-- `--vscode-foreground` - 前景色
-- `--vscode-editor-background` - 编辑器背景
-- `--vscode-button-background` - 按钮背景
-- `--vscode-input-background` - 输入框背景
-- 更多变量见 [VS Code Theme Colors](https://code.visualstudio.com/api/references/theme-color)
+Common variables:
+- `--vscode-foreground` - Foreground color
+- `--vscode-editor-background` - Editor background
+- `--vscode-button-background` - Button background
+- `--vscode-input-background` - Input background
+- See more at [VS Code Theme Colors](https://code.visualstudio.com/api/references/theme-color)
 
-## VS Code API 集成
+## VS Code API Integration
 
-每个组件都可以通过 `acquireVsCodeApi()` 与扩展通信：
+Each component can communicate with the extension via `acquireVsCodeApi()`:
 
 ```typescript
 declare const acquireVsCodeApi: () => {
@@ -136,35 +136,35 @@ declare const acquireVsCodeApi: () => {
 
 const vscode = acquireVsCodeApi();
 
-// 发送消息到扩展
+// Send message to extension
 vscode.postMessage({ command: 'doSomething', data: {...} });
 
-// 接收来自扩展的消息
+// Receive messages from extension
 window.addEventListener('message', (event) => {
   const message = event.data;
-  // 处理消息
+  // Handle message
 });
 ```
 
-## 性能优化
+## Performance Optimization
 
-1. **代码分割**: React 和 react-dom 被提取到单独的 chunk，在所有组件间共享
-2. **CSS 合并**: 所有样式合并到一个文件，减少请求次数
-3. **Tree Shaking**: Vite 自动移除未使用的代码
-4. **Minification**: 生产构建自动压缩代码
+1. **Code splitting**: React and react-dom are extracted to a separate chunk, shared across all components
+2. **CSS merging**: All styles merged into one file, reducing request count
+3. **Tree Shaking**: Vite automatically removes unused code
+4. **Minification**: Production build automatically compresses code
 
-## 注意事项
+## Important Notes
 
-1. **不要使用 node_modules 中的资源**: Webview 无法访问文件系统
-2. **CSP 限制**: 内联脚本和样式受到限制，需要在 HTML 中配置 CSP
-3. **路径解析**: 所有资源 URI 必须通过 `webview.asWebviewUri()` 转换
-4. **状态管理**: 使用 `vscode.setState/getState` 而不是 localStorage
+1. **Don't use resources from node_modules**: Webview cannot access the file system
+2. **CSP restrictions**: Inline scripts and styles are restricted, CSP needs to be configured in HTML
+3. **Path resolution**: All resource URIs must be converted via `webview.asWebviewUri()`
+4. **State management**: Use `vscode.setState/getState` instead of localStorage
 
-## 构建优化建议
+## Build Optimization Suggestions
 
-如果需要进一步优化构建大小：
+To further optimize build size:
 
-1. 考虑使用 Preact 替代 React（减小 ~30KB）
-2. 使用动态导入实现按需加载
-3. 压缩 CSS 变量名（需要自定义 PostCSS 插件）
-4. 使用 CDN 托管 React（不推荐，因为 Webview 隔离）
+1. Consider using Preact instead of React (reduces ~30KB)
+2. Use dynamic imports for on-demand loading
+3. Compress CSS variable names (requires custom PostCSS plugin)
+4. Use CDN for React (not recommended due to Webview isolation)
