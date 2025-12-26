@@ -40,4 +40,10 @@ export default defineConfig({
       localsConvention: 'camelCase',
     },
   },
+  worker: {
+    format: 'es',
+  },
+  optimizeDeps: {
+    include: ['monaco-editor'],
+  },
 });

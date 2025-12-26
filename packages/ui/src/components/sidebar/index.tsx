@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 // Note: codicon.css is loaded by the extension via webview HTML
 import '../../styles/variables.css';
@@ -8,16 +8,24 @@ import '../../styles/common.css';
 import '../../styles/sidebar.css';
 import type { ReviewTask, Workflow } from '../../types/config';
 
-// VS Code API
-declare const acquireVsCodeApi: () => {
+interface VsCodeApi {
   postMessage: (message: WebviewMessage) => void;
   getState: () => SidebarState | undefined;
   setState: (state: SidebarState) => void;
-};
+}
 
-const vscode = acquireVsCodeApi();
+declare const acquireVsCodeApi: () => VsCodeApi;
 
-// Types
+const vscode: VsCodeApi = (() => {
+  const win = window as Window & { vscodeApi?: VsCodeApi };
+  if (win.vscodeApi) {
+    return win.vscodeApi;
+  }
+  const api = acquireVsCodeApi();
+  win.vscodeApi = api;
+  return api;
+})();
+
 interface SidebarState {
   workflows: readonly Workflow[];
   tasks: readonly ReviewTask[];
@@ -28,26 +36,63 @@ interface WebviewMessage {
   id?: string;
 }
 
-const DEFAULT_WORKFLOW_ID = 'default';
+const BUILTIN_WORKFLOW_IDS = {
+  DEFAULT: 'default',
+  SECURITY: 'security',
+  PERFORMANCE: 'performance',
+  IDIOMATIC: 'idiomatic',
+  FULL_REVIEW: 'full-review',
+} as const;
+
+const BUILTIN_WORKFLOW_ID_LIST = Object.values(BUILTIN_WORKFLOW_IDS);
 
 // Codicon component for VS Code icons
 const Icon: FC<{ name: string; className?: string }> = ({ name, className = '' }) => (
   <i className={`codicon codicon-${name} ${className}`} />
 );
 
+const getPipelineIcon = (nodeName: string) => {
+  const normalized = nodeName.trim().toLowerCase();
+
+  if (normalized.includes('context') || normalized.includes('scope')) return 'telescope';
+  if (normalized.includes('security') || normalized.includes('vuln')) return 'shield';
+  if (normalized.includes('review') || normalized.includes('audit')) return 'eye';
+  if (normalized.includes('refactor') || normalized.includes('cleanup')) return 'wand';
+  if (normalized.includes('style') || normalized.includes('format') || normalized.includes('lint'))
+    return 'paintcan';
+  if (normalized.includes('summary') || normalized.includes('summarize')) return 'note';
+  if (normalized.includes('chat') || normalized.includes('discuss')) return 'comment';
+
+  return 'symbol-misc';
+};
+
+// Safely get initial state from cache - handles corrupted/old format data
+const getInitialState = (): SidebarState => {
+  try {
+    const cached = vscode.getState();
+    // Validate cached data structure
+    if (cached && Array.isArray(cached.workflows) && Array.isArray(cached.tasks)) {
+      return cached;
+    }
+  } catch (e) {
+    console.warn('[Sidebar] Failed to restore state:', e);
+  }
+  return { workflows: [], tasks: [] };
+};
+
 // Main Component
 const SidebarApp: FC = () => {
   const [activeTab, setActiveTab] = useState<'tasks' | 'workflows'>('tasks');
-  const [state, setState] = useState<SidebarState>({
-    workflows: [],
-    tasks: [],
-  });
+  const [state, setState] = useState<SidebarState>(getInitialState);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
       if (message.command === 'refresh') {
-        setState(message.data);
+        // Update state and persist to cache
+        const newState = message.data as SidebarState;
+        setState(newState);
+        vscode.setState(newState);
       }
     };
 
@@ -135,97 +180,98 @@ const TasksView: FC<TasksViewProps> = ({ tasks, workflows, sendMessage }) => {
         const workflow = workflows.find((w) => w.id === task.workflowId);
 
         return (
-          <div
-            key={task.id}
-            className="task-card"
-            onClick={() => sendMessage('viewTaskDiff', task.id)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage('viewTaskDiff', task.id)}
-            tabIndex={0}
-            role="button"
-          >
-            {/* Card Header - Branch Flow */}
-            <div className="task-card-header">
-              <div className="task-title">
-                <Icon name="git-pull-request" className="task-icon" />
-                <span className="branch-name source">{task.headBranch}</span>
+          <div key={task.id} className="task-card">
+            <button
+              type="button"
+              className="task-card-hitarea"
+              onClick={() => sendMessage('viewTaskDiff', task.id)}
+              aria-label={`View diff for ${task.headBranch}`}
+            />
+            <div className="task-card-content">
+              {/* Card Header - Branch Flow */}
+              <div className="task-card-header">
+                <div className="task-title">
+                  <Icon name="git-pull-request" className="task-icon" />
+                  <span className="branch-name source">{task.headBranch}</span>
+                </div>
+
+                {/* Hover Actions */}
+                <div className="task-actions">
+                  <button
+                    type="button"
+                    className="action-btn primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessage('runTask', task.id);
+                    }}
+                    title="Run Review"
+                  >
+                    <Icon name="play" />
+                  </button>
+                  <button
+                    type="button"
+                    className="action-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessage('editTask', task.id);
+                    }}
+                    title="Edit"
+                  >
+                    <Icon name="pencil" />
+                  </button>
+                  <button
+                    type="button"
+                    className="action-btn danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessage('deleteTask', task.id);
+                    }}
+                    title="Delete"
+                  >
+                    <Icon name="trash" />
+                  </button>
+                </div>
               </div>
 
-              {/* Hover Actions */}
-              <div className="task-actions">
-                <button
-                  type="button"
-                  className="action-btn primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('runTask', task.id);
-                  }}
-                  title="Run Review"
-                >
-                  <Icon name="play" />
-                </button>
-                <button
-                  type="button"
-                  className="action-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('editTask', task.id);
-                  }}
-                  title="Edit"
-                >
-                  <Icon name="pencil" />
-                </button>
-                <button
-                  type="button"
-                  className="action-btn danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('deleteTask', task.id);
-                  }}
-                  title="Delete"
-                >
-                  <Icon name="trash" />
-                </button>
+              {/* Target Branch */}
+              <div className="task-target">
+                <span className="target-arrow">↳</span>
+                <span className="target-label">into</span>
+                <span className="branch-name target">{task.baseBranch}</span>
               </div>
-            </div>
 
-            {/* Target Branch */}
-            <div className="task-target">
-              <span className="target-arrow">↳</span>
-              <span className="target-label">into</span>
-              <span className="branch-name target">{task.baseBranch}</span>
-            </div>
-
-            {/* Metadata Row */}
-            <div className="task-meta">
-              <span className="commit-hash">{task.headCommit.substring(0, 7)}</span>
-              <span className="meta-separator">•</span>
-              {workflow ? (
-                <button
-                  type="button"
-                  className="workflow-link"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('openWorkflow', workflow.id);
-                  }}
-                  title="View workflow"
-                >
-                  <Icon name="pass-filled" className="workflow-icon active" />
-                  <span>{workflow.name}</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="workflow-link empty"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('selectWorkflowForTask', task.id);
-                  }}
-                  title="Select workflow"
-                >
-                  <Icon name="error" className="workflow-icon" />
-                  <span>No workflow</span>
-                </button>
-              )}
+              {/* Metadata Row */}
+              <div className="task-meta">
+                <span className="commit-hash">{task.headCommit.substring(0, 7)}</span>
+                <span className="meta-separator">•</span>
+                {workflow ? (
+                  <button
+                    type="button"
+                    className="workflow-link"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessage('openWorkflow', workflow.id);
+                    }}
+                    title="View workflow"
+                  >
+                    <Icon name="pass-filled" className="workflow-icon active" />
+                    <span>{workflow.name}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="workflow-link empty"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      sendMessage('selectWorkflowForTask', task.id);
+                    }}
+                    title="Select workflow"
+                  >
+                    <Icon name="error" className="workflow-icon" />
+                    <span>No workflow</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -254,18 +300,30 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
   }
 
   const sortedWorkflows = [...workflows].sort((a, b) => {
-    if (a.id === DEFAULT_WORKFLOW_ID) return -1;
-    if (b.id === DEFAULT_WORKFLOW_ID) return 1;
+    // Built-in workflows come first, in their predefined order
+    const aBuiltinIdx = BUILTIN_WORKFLOW_ID_LIST.indexOf(a.id);
+    const bBuiltinIdx = BUILTIN_WORKFLOW_ID_LIST.indexOf(b.id);
+    if (aBuiltinIdx !== -1 && bBuiltinIdx !== -1) return aBuiltinIdx - bBuiltinIdx;
+    if (aBuiltinIdx !== -1) return -1;
+    if (bBuiltinIdx !== -1) return 1;
     return 0;
   });
 
   return (
     <div className="content">
       {sortedWorkflows.map((workflow) => {
-        const isDefault = workflow.id === DEFAULT_WORKFLOW_ID;
+        const isBuiltin = BUILTIN_WORKFLOW_ID_LIST.includes(workflow.id);
+        const isDefault = workflow.id === BUILTIN_WORKFLOW_IDS.DEFAULT;
+        const orderedNodes = [...workflow.nodes].sort((a, b) => a.order - b.order);
+        const maxVisibleNodes = 5;
+        const visibleNodes =
+          orderedNodes.length <= maxVisibleNodes
+            ? orderedNodes
+            : orderedNodes.slice(0, maxVisibleNodes - 1);
+        const hiddenCount = Math.max(0, orderedNodes.length - visibleNodes.length);
 
         return (
-          <div key={workflow.id} className={`workflow-card ${isDefault ? 'default' : ''}`}>
+          <div key={workflow.id} className={`workflow-card ${isBuiltin ? 'builtin' : ''}`}>
             <div className="workflow-card-header">
               <button
                 type="button"
@@ -273,11 +331,11 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
                 onClick={() => sendMessage('openWorkflow', workflow.id)}
               >
                 <Icon
-                  name={isDefault ? 'verified-filled' : 'symbol-event'}
-                  className="workflow-title-icon"
+                  name={isBuiltin ? 'verified-filled' : 'beaker'}
+                  className={`workflow-title-icon ${isBuiltin ? 'official' : 'custom'}`}
                 />
                 <span>{workflow.name}</span>
-                {isDefault && <span className="default-badge">Default</span>}
+                {isDefault && <span className="default-suffix">(Default)</span>}
               </button>
 
               <div className="workflow-actions">
@@ -288,11 +346,11 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
                     e.stopPropagation();
                     sendMessage('openWorkflow', workflow.id);
                   }}
-                  title="Edit Workflow"
+                  title={isBuiltin ? 'View Workflow' : 'Edit Workflow'}
                 >
-                  <Icon name="pencil" />
+                  <Icon name={isBuiltin ? 'eye' : 'pencil'} />
                 </button>
-                {!isDefault && (
+                {!isBuiltin && (
                   <button
                     type="button"
                     className="action-btn danger"
@@ -322,16 +380,27 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
               </span>
             </div>
 
-            {workflow.nodes.length > 0 && (
-              <div className="workflow-steps">
-                {workflow.nodes.slice(0, 3).map((node, index) => (
-                  <span key={node.id} className="step-badge">
-                    <span className="step-number">{index + 1}</span>
-                    <span className="step-name">{node.name}</span>
-                  </span>
+            {orderedNodes.length > 0 && (
+              <div className="workflow-pipeline">
+                {visibleNodes.map((node, index) => (
+                  <Fragment key={node.id}>
+                    <span className="pipeline-node" title={node.name}>
+                      <Icon name={getPipelineIcon(node.name)} className="pipeline-node-icon" />
+                      <span className="pipeline-node-label">{node.name}</span>
+                    </span>
+                    {index < visibleNodes.length - 1 && (
+                      <Icon name="arrow-right" className="pipeline-arrow" />
+                    )}
+                  </Fragment>
                 ))}
-                {workflow.nodes.length > 3 && (
-                  <span className="step-more">+{workflow.nodes.length - 3}</span>
+                {hiddenCount > 0 && (
+                  <>
+                    <Icon name="arrow-right" className="pipeline-arrow" />
+                    <span className="pipeline-more" title={`${hiddenCount} more step(s)`}>
+                      <Icon name="ellipsis" className="pipeline-more-icon" />
+                      <span>+{hiddenCount}</span>
+                    </span>
+                  </>
                 )}
               </div>
             )}

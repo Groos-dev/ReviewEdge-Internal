@@ -31,6 +31,87 @@ export class CodeReviewCore {
       return { workflow };
     });
 
+    this.messenger.on(
+      'workflow/create',
+      async (msg: Message<ToServerProtocol['workflow/create']>) => {
+        const { workflow, workspacePath } = msg.data;
+        await this.ensureInitialized(workspacePath);
+        const workflowId = `workflow-${Date.now()}`;
+        const now = Date.now();
+        const nodes = (workflow.nodes || []).map((n, idx) => ({
+          id: n.id || `${workflowId}-node-${idx}`,
+          name: n.name,
+          content: n.content,
+          order: n.order,
+          createdAt: now,
+          updatedAt: now,
+        }));
+        const newWorkflow = await taskReader.createWorkflow({
+          id: workflowId,
+          name: workflow.name,
+          description: workflow.description || '',
+          nodes,
+        });
+        taskReader.close();
+        return { workflow: newWorkflow };
+      }
+    );
+
+    this.messenger.on(
+      'workflow/update',
+      async (msg: Message<ToServerProtocol['workflow/update']>) => {
+        const { workflow, workspacePath } = msg.data;
+        await this.ensureInitialized(workspacePath);
+        const now = Date.now();
+        const nodes = workflow.nodes.map((n, idx) => ({
+          id: n.id || `${workflow.id}-node-${idx}`,
+          name: n.name,
+          content: n.content,
+          order: n.order,
+          createdAt: n.createdAt || now,
+          updatedAt: now,
+        }));
+        const workflowToUpdate = {
+          id: workflow.id,
+          name: workflow.name,
+          description: workflow.description,
+          nodes,
+          createdAt: workflow.createdAt,
+          updatedAt: now,
+        };
+        const updatedWorkflow = await taskReader.updateWorkflow(workflowToUpdate);
+        taskReader.close();
+        return { workflow: updatedWorkflow };
+      }
+    );
+
+    this.messenger.on(
+      'workflow/delete',
+      async (msg: Message<ToServerProtocol['workflow/delete']>) => {
+        const { workflowId, workspacePath } = msg.data;
+        await this.ensureInitialized(workspacePath);
+        const isBuiltin = taskReader.isBuiltinWorkflow(workflowId);
+        if (isBuiltin) {
+          taskReader.close();
+          return { success: false, error: 'Cannot delete built-in workflow' };
+        }
+        const success = await taskReader.deleteWorkflow(workflowId);
+        taskReader.close();
+        return { success };
+      }
+    );
+
+    this.messenger.on(
+      'workflow/isBuiltin',
+      async (msg: Message<ToServerProtocol['workflow/isBuiltin']>) => {
+        const { workflowId, workspacePath } = msg.data;
+        await this.ensureInitialized(workspacePath);
+        const isBuiltin = taskReader.isBuiltinWorkflow(workflowId);
+        taskReader.close();
+        return { isBuiltin };
+      }
+    );
+
     // Task handlers
     this.messenger.on('task/list', async (msg: Message<ToServerProtocol['task/list']>) => {
       const { workspacePath } = msg.data;

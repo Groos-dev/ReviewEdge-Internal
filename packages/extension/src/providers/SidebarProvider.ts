@@ -26,6 +26,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
     this._setWebviewMessageListener(webviewView.webview);
+
     this.refresh();
 
     webviewView.onDidChangeVisibility(() => {
@@ -115,6 +116,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           await this._runTask(message.id);
           break;
         case 'viewTaskDiff':
+          console.log('[SidebarProvider] viewTaskDiff received, id:', message.id);
           await vscode.commands.executeCommand('mcpCodeReview.viewTaskDiff', message.id);
           break;
         case 'openSettings':
@@ -438,7 +440,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     );
 
     const assetsDir = vscode.Uri.joinPath(this._extensionUri, 'dist', 'webview', 'assets');
-    const fs = require('fs');
+    const fs = require('node:fs');
     let cssUri = '';
 
     try {

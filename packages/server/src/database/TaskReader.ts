@@ -4,9 +4,10 @@ import * as path from 'node:path';
 import { get, isEmpty } from 'lodash';
 import initSqlJs, { type Database } from 'sql.js';
 import type { PromptNode, ReviewComment, ReviewTask, Workflow } from '../types/review.js';
+import { BUILTIN_WORKFLOWS, isBuiltinWorkflow } from '../workflows/index.js';
 import schemaSql from './schema.sql';
 
-const CODEVIEW_FOLDER = '.codeview';
+const CODEREVIEW_FOLDER = '.codereview';
 const DB_FILE = 'mcp-codereview.db';
 
 // ============================================================================
@@ -52,24 +53,26 @@ function getFirstRow(
   return rowToObject(firstResult.columns, firstRow);
 }
 
-function resolveDbPath(workspacePath: string): string {
-  const preferredRoot = workspacePath?.trim() ? workspacePath : os.homedir();
-  const preferredDir = path.join(preferredRoot, CODEVIEW_FOLDER);
+function resolveDbPath(_workspacePath: string): string {
+  // Always store database in user home directory under .codereview/
+  const dbDir = path.join(os.homedir(), CODEREVIEW_FOLDER);
 
   try {
-    fs.mkdirSync(preferredDir, { recursive: true });
-    return path.join(preferredDir, DB_FILE);
-  } catch {
-    const fallbackDir = path.join(os.homedir(), CODEVIEW_FOLDER);
-    fs.mkdirSync(fallbackDir, { recursive: true });
-    return path.join(fallbackDir, DB_FILE);
+    fs.mkdirSync(dbDir, { recursive: true });
+  } catch (error) {
+    console.error('[TaskReader] Failed to create database directory:', error);
   }
+
+  return path.join(dbDir, DB_FILE);
 }
 
 export class TaskReader {
   private db: Database | null = null;
   private SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null;
   private dbPath = '';
+
+  // TODO(perf): Move to batched/transactional writes and async flush.
+  //   Current implementation exports the entire DB and writeFileSync() on every save().
 
   async initialize(workspacePath: string): Promise<boolean> {
     if (!this.SQL) {
@@ -104,10 +107,10 @@ export class TaskReader {
     this.dbPath = resolveDbPath(workspacePath);
 
     if (!fs.existsSync(this.dbPath)) {
-      console.error(`[TaskReader] Database not found, creating: ${this.dbPath}`);
+      console.log(`[TaskReader] Database not found, creating: ${this.dbPath}`);
       this.db = new this.SQL.Database();
       this.db.run(schemaSql);
-      this.ensureDefaultWorkflow();
+      this.ensureBuiltinWorkflows();
       this.save();
       return true;
     }
@@ -115,9 +118,9 @@ export class TaskReader {
     try {
       const buffer = fs.readFileSync(this.dbPath);
       this.db = new this.SQL.Database(buffer);
-      console.error(`[TaskReader] Database loaded from: ${this.dbPath}`);
+      console.log(`[TaskReader] Database loaded from: ${this.dbPath}`);
       this.db.run(schemaSql);
-      this.ensureDefaultWorkflow();
+      this.ensureBuiltinWorkflows();
       this.save();
       return true;
     } catch (error) {
@@ -126,29 +129,35 @@ export class TaskReader {
     }
   }
 
-  private ensureDefaultWorkflow(): void {
+  private ensureBuiltinWorkflows(): void {
     if (!this.db) return;
 
     const now = Date.now();
-    this.db.run(
-      `INSERT OR IGNORE INTO workflows (id, name, description, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?)`,
-      ['default', 'Default Workflow', 'Default workflow', now, now]
-    );
 
-    this.db.run(
-      `INSERT OR IGNORE INTO prompt_nodes (id, workflowId, name, content, "order", createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        'default-node-1',
-        'default',
-        'General Review',
-        'Review the diff between {{base_commit}} and {{head_commit}} on branch {{head_branch}}. Add actionable comments with severity and category.',
-        0,
-        now,
-        now,
-      ]
-    );
+    for (const workflow of BUILTIN_WORKFLOWS) {
+      // Insert workflow if not exists
+      this.db.run(
+        `INSERT OR IGNORE INTO workflows (id, name, description, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?)`,
+        [workflow.id, workflow.name, workflow.description, now, now]
+      );
+
+      // Insert nodes if not exists
+      for (const node of workflow.nodes) {
+        this.db.run(
+          `INSERT OR IGNORE INTO prompt_nodes (id, workflowId, name, content, "order", createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [node.id, workflow.id, node.name, node.content, node.order, now, now]
+        );
+      }
+    }
+  }
+
+  /**
+   * Check if a workflow is a built-in workflow (cannot be deleted)
+   */
+  isBuiltinWorkflow(workflowId: string): boolean {
+    return isBuiltinWorkflow(workflowId);
   }
 
   async getTasks(): Promise<ReviewTask[]> {
@@ -302,6 +311,7 @@ export class TaskReader {
     if (!this.db) return [];
 
     try {
+      // TODO(perf): Avoid N+1 queries (workflows + per-workflow nodes). Consider a join and grouping.
       const result = this.db.exec('SELECT * FROM workflows ORDER BY updatedAt DESC');
       const firstResult = getFirstResult(result);
       if (!firstResult) return [];
@@ -472,7 +482,128 @@ export class TaskReader {
     }
   }
 
+  // ============================================================================
+  // Workflow CRUD Operations
+  // ============================================================================
+
+  async createWorkflow(workflow: Omit<Workflow, 'createdAt' | 'updatedAt'>): Promise<Workflow> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const now = Date.now();
+      const newWorkflow: Workflow = {
+        ...workflow,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      this.db.run(
+        `INSERT INTO workflows (id, name, description, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?)`,
+        [newWorkflow.id, newWorkflow.name, newWorkflow.description, now, now]
+      );
+
+      // Insert nodes
+      for (const node of newWorkflow.nodes) {
+        this.db.run(
+          `INSERT INTO prompt_nodes (id, workflowId, name, content, "order", createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [node.id, newWorkflow.id, node.name, node.content, node.order, now, now]
+        );
+      }
+
+      this.save();
+      return newWorkflow;
+    } catch (error) {
+      console.error('[TaskReader] Failed to create workflow:', error);
+      throw error;
+    }
+  }
+
+  async updateWorkflow(workflow: Workflow): Promise<Workflow | null> {
+    if (!this.db) return null;
+
+    // Don't allow updating built-in workflows' core properties
+    // But allow updating nodes for customization
+    try {
+      const now = Date.now();
+
+      // Update workflow metadata
+      this.db.run(`UPDATE workflows SET name = ?, description = ?, updatedAt = ? WHERE id = ?`, [
+        workflow.name,
+        workflow.description,
+        now,
+        workflow.id,
+      ]);
+
+      // Delete existing nodes and re-insert
+      this.db.run(`DELETE FROM prompt_nodes WHERE workflowId = ?`, [workflow.id]);
+
+      for (const node of workflow.nodes) {
+        const nodeId = node.id || `${workflow.id}-node-${node.order}`;
+        this.db.run(
+          `INSERT INTO prompt_nodes (id, workflowId, name, content, "order", createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [nodeId, workflow.id, node.name, node.content, node.order, node.createdAt || now, now]
+        );
+      }
+
+      this.save();
+      return { ...workflow, updatedAt: now };
+    } catch (error) {
+      console.error('[TaskReader] Failed to update workflow:', error);
+      return null;
+    }
+  }
+
+  async deleteWorkflow(workflowId: string): Promise<boolean> {
+    if (!this.db) return false;
+
+    // Prevent deletion of built-in workflows
+    if (isBuiltinWorkflow(workflowId)) {
+      console.error('[TaskReader] Cannot delete built-in workflow:', workflowId);
+      return false;
+    }
+
+    try {
+      // Delete nodes first
+      this.db.run(`DELETE FROM prompt_nodes WHERE workflowId = ?`, [workflowId]);
+      // Delete workflow
+      this.db.run(`DELETE FROM workflows WHERE id = ?`, [workflowId]);
+      // Update tasks using this workflow to use default
+      this.db.run(`UPDATE tasks SET workflowId = 'default' WHERE workflowId = ?`, [workflowId]);
+
+      this.save();
+      return true;
+    } catch (error) {
+      console.error('[TaskReader] Failed to delete workflow:', error);
+      return false;
+    }
+  }
+
+  async assignWorkflowToTask(taskId: string, workflowId: string): Promise<boolean> {
+    if (!this.db) return false;
+
+    try {
+      const now = Date.now();
+      this.db.run(`UPDATE tasks SET workflowId = ?, updatedAt = ? WHERE id = ?`, [
+        workflowId,
+        now,
+        taskId,
+      ]);
+      this.save();
+      return true;
+    } catch (error) {
+      console.error('[TaskReader] Failed to assign workflow to task:', error);
+      return false;
+    }
+  }
+
   private save(): void {
+    // TODO(perf): Debounce saves and/or use WAL-like incremental persistence.
+    // TODO(reliability): Consider file locking / atomic write (write to temp then rename) to reduce corruption risk.
     if (!this.db || !this.dbPath) return;
     const data = this.db.export();
     const buffer = Buffer.from(data);

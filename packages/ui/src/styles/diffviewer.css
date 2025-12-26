@@ -331,9 +331,9 @@
 }
 
 /* Override diff view wrapper styles */
-.diff-viewer-content .diff-view-wrapper {
-  font-family: var(--vscode-editor-font-family, monospace) !important;
-  background-color: var(--vscode-editor-background) !important;
+.diff-viewer-content .diff-view-wrapper.diff-view-wrapper {
+  font-family: var(--vscode-editor-font-family, monospace);
+  background-color: var(--vscode-editor-background);
 }
 
 /* Ensure syntax highlighting adapts to theme */
@@ -960,7 +960,9 @@
 [data-mode="new"] [data-line-num],
 [data-side="new"] [data-line-num] {
   cursor: pointer;
-  transition: color 0.15s, text-decoration 0.15s;
+  transition:
+    color 0.15s,
+    text-decoration 0.15s;
 }
 
 .new-diff-table [data-line-num]:hover,
@@ -974,7 +976,9 @@
 /* Line number elements in Unified View (new line numbers only) */
 [data-line-new-num] {
   cursor: pointer;
-  transition: color 0.15s, text-decoration 0.15s;
+  transition:
+    color 0.15s,
+    text-decoration 0.15s;
 }
 
 [data-line-new-num]:hover {

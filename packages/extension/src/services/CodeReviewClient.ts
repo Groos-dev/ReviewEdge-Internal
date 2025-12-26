@@ -21,6 +21,58 @@ export class CodeReviewClient {
     return (response.workflow as Workflow) ?? null;
   }
 
+  async createWorkflow(
+    workflow: {
+      name: string;
+      description?: string;
+      nodes?: Array<{ name: string; content: string; order: number }>;
+    },
+    workspacePath: string
+  ): Promise<Workflow | null> {
+    const response = await this.messenger.request('workflow/create', { workflow, workspacePath });
+    return (response.workflow as Workflow) ?? null;
+  }
+
+  async updateWorkflow(workflow: Workflow, workspacePath: string): Promise<Workflow | null> {
+    // Convert readonly workflow to mutable for the request
+    const mutableWorkflow = {
+      id: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      nodes: workflow.nodes.map((n) => ({
+        id: n.id,
+        name: n.name,
+        content: n.content,
+        order: n.order,
+        createdAt: n.createdAt,
+        updatedAt: n.updatedAt,
+      })),
+      createdAt: workflow.createdAt,
+      updatedAt: workflow.updatedAt,
+    };
+    const response = await this.messenger.request('workflow/update', {
+      workflow: mutableWorkflow,
+      workspacePath,
+    });
+    return (response.workflow as Workflow) ?? null;
+  }
+
+  async deleteWorkflow(
+    workflowId: string,
+    workspacePath: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const response = await this.messenger.request('workflow/delete', { workflowId, workspacePath });
+    return { success: response.success ?? false, error: response.error };
+  }
+
+  async isBuiltinWorkflow(workflowId: string, workspacePath: string): Promise<boolean> {
+    const response = await this.messenger.request('workflow/isBuiltin', {
+      workflowId,
+      workspacePath,
+    });
+    return response.isBuiltin ?? false;
+  }
+
   async listTasks(workspacePath: string): Promise<ReviewTask[]> {
     const response = await this.messenger.request('task/list', { workspacePath });
     return (response.tasks as ReviewTask[]) ?? [];

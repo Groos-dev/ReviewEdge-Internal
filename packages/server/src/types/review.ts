@@ -33,6 +33,8 @@ export interface ReviewComment {
   readonly taskId: string;
   readonly filePath: string;
   readonly line: number;
+  // TODO(types): Align this with UI types and schemas (prefer 'INFO' | 'WARNING' | 'CRITICAL').
+  //   Right now server uses `string` while UI assumes a strict union, which can cause mismatches.
   readonly severity: string;
   readonly category: string;
   readonly comment: string;

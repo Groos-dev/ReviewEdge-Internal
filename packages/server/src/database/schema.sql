@@ -44,3 +44,9 @@ CREATE TABLE IF NOT EXISTS review_comments (
     createdAt INTEGER NOT NULL,
     FOREIGN KEY (taskId) REFERENCES tasks (id) ON DELETE CASCADE
 );
+
+-- TODO(perf): Add indexes for common access patterns, for example:
+--   - review_comments(taskId)
+--   - review_comments(taskId, filePath, line)
+--   - prompt_nodes(workflowId)
+-- Keep changes additive to avoid breaking existing user data.

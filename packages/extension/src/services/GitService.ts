@@ -6,6 +6,8 @@ import type { GitCommit } from '../types/git';
 const execAsync = promisify(exec);
 
 export class GitService {
+  // TODO(security): Avoid string interpolation in shell commands.
+  //   Prefer execFile/spawn with argument arrays to prevent quoting bugs and reduce injection risk.
   async getBranches(workspacePath: string): Promise<string[]> {
     try {
       const { stdout } = await execAsync('git branch -a', { cwd: workspacePath });

@@ -23,7 +23,9 @@ interface DiffResponse {
   comments: ReviewComment[];
 }
 
-// Mock comments for testing - set to true to enable
+// Mock comments for testing.
+// TODO(refactor): Remove mock comments from production code paths or gate behind a user setting.
+//   Current behavior can render fake comments and hide real integration issues.
 const USE_MOCK_COMMENTS = true;
 
 function generateMockComments(files: DiffFileData[], taskId: string): ReviewComment[] {

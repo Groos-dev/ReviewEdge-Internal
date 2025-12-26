@@ -104,7 +104,7 @@
 
 .node-item {
   padding: 6px 8px;
-  margin: 1px 4px;
+  margin: 1px 0;
   border: none;
   border-radius: 0;
   cursor: pointer;
@@ -113,6 +113,8 @@
   justify-content: space-between;
   align-items: center;
   background: transparent;
+  width: 100%;
+  text-align: left;
 }
 
 .node-item:hover {
@@ -159,6 +161,7 @@
   gap: 2px;
   opacity: 0;
   transition: opacity 0.2s;
+  flex-shrink: 0;
 }
 
 .node-item:hover .node-actions {
@@ -237,4 +240,108 @@
   font-size: var(--vscode-font-size);
   line-height: 1.5;
   color: var(--vscode-foreground);
+}
+
+/* ============================================
+   Editor Placeholder (shown when content is empty)
+   ============================================ */
+
+.node-editor-content {
+  position: relative;
+}
+
+.editor-placeholder {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  color: var(--vscode-input-placeholderForeground, #6e6e6e);
+  font-family: var(--vscode-editor-font-family, "Menlo", "Monaco", "Courier New", monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.btn-primary:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.btn-secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  border: 1px solid var(--vscode-button-border, transparent);
+}
+
+.btn-secondary:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.btn-icon {
+  font-size: 14px;
+}
+
+/* ============================================
+   Node Editor Header Updates
+   ============================================ */
+
+.node-editor-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ============================================
+   Monaco Editor Container
+   ============================================ */
+
+.node-editor-content {
+  flex: 1;
+  overflow: hidden;
+  background: var(--vscode-editor-background);
+}
+
+/* Override Monaco styles for better integration */
+.node-editor-content .monaco-editor {
+  --vscode-editor-background: transparent;
+}
+
+.node-editor-content .monaco-editor .margin {
+  background: transparent;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--vscode-foreground);
+  font-size: 14px;
 }

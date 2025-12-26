@@ -144,19 +144,28 @@ function groupCommentsByFile(comments: ReviewComment[]): Map<string, ReviewComme
   return grouped;
 }
 
-declare global {
-  interface Window {
-    acquireVsCodeApi: () => VSCodeAPI;
-  }
-}
-
 interface VSCodeAPI {
   postMessage(message: unknown): void;
   getState(): unknown;
   setState(state: unknown): void;
 }
 
-const vscode = window.acquireVsCodeApi();
+declare global {
+  interface Window {
+    acquireVsCodeApi: () => VSCodeAPI;
+    vscodeApi?: VSCodeAPI;
+  }
+}
+
+// Cache the API instance to prevent multiple calls (which throws an error)
+const vscode: VSCodeAPI = (() => {
+  if (window.vscodeApi) {
+    return window.vscodeApi;
+  }
+  const api = window.acquireVsCodeApi();
+  window.vscodeApi = api;
+  return api;
+})();
 
 // Helper function to create DiffFile instance from diff data
 function createDiffFileInstance(data: DiffData): DiffFile | null {

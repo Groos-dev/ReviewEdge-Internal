@@ -57,7 +57,15 @@ if (fs.existsSync(assetsSource)) {
 // Copy codicons - check root node_modules first, then ui package
 let codiconsSource = path.join(repoRoot, 'node_modules', '@vscode', 'codicons', 'dist');
 if (!fs.existsSync(codiconsSource)) {
-  codiconsSource = path.join(repoRoot, 'packages', 'ui', 'node_modules', '@vscode', 'codicons', 'dist');
+  codiconsSource = path.join(
+    repoRoot,
+    'packages',
+    'ui',
+    'node_modules',
+    '@vscode',
+    'codicons',
+    'dist'
+  );
 }
 
 const codiconsDest = path.join(destDir, 'codicons');

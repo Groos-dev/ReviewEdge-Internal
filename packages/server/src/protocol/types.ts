@@ -25,11 +25,10 @@ export interface ToServerProtocol {
   'workflow/get': { workflowId: string; workspacePath: string };
   'workflow/create': {
     workflow: {
-      id: string;
       name: string;
-      description: string;
-      nodes: Array<{
-        id: string;
+      description?: string;
+      nodes?: Array<{
+        id?: string;
         name: string;
         content: string;
         order: number;
@@ -38,20 +37,25 @@ export interface ToServerProtocol {
     workspacePath: string;
   };
   'workflow/update': {
-    workflowId: string;
     workflow: {
-      name?: string;
-      description?: string;
-      nodes?: Array<{
-        id: string;
+      id: string;
+      name: string;
+      description: string;
+      nodes: Array<{
+        id?: string;
         name: string;
         content: string;
         order: number;
+        createdAt?: number;
+        updatedAt?: number;
       }>;
+      createdAt: number;
+      updatedAt: number;
     };
     workspacePath: string;
   };
   'workflow/delete': { workflowId: string; workspacePath: string };
+  'workflow/isBuiltin': { workflowId: string; workspacePath: string };
 
   // Task operations
   'task/list': { workspacePath: string };
@@ -114,12 +118,15 @@ export interface ToServerProtocol {
 // ============================================================================
 
 export interface FromServerProtocol {
+  // TODO(types): Replace `unknown` payloads with shared domain types.
+  //   Current usage relies on unsafe casts in the extension (e.g. `as Workflow[]`).
   // Workflow responses
   'workflow/list': { workflows: Array<unknown> };
   'workflow/get': { workflow: unknown | null };
   'workflow/create': { workflow: unknown };
   'workflow/update': { workflow: unknown };
-  'workflow/delete': { success: boolean };
+  'workflow/delete': { success: boolean; error?: string };
+  'workflow/isBuiltin': { isBuiltin: boolean };
 
   // Task responses
   'task/list': { tasks: Array<unknown> };

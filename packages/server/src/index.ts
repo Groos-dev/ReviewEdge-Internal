@@ -22,6 +22,12 @@ import type { ReviewComment, ReviewTask } from './types/review.js';
 // Tool Definitions
 // ============================================================================
 
+// TODO(refactor): Split this file into modules:
+//   - tool definitions + schemas
+//   - handlers
+//   - prompt builder
+//   - server bootstrap
+
 interface CommentInput {
   readonly taskId: string;
   readonly filePath: string;

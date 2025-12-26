@@ -14,6 +14,9 @@ export class InProcessMessenger<ToProtocol, FromProtocol> {
   private idListeners = new Map<string, (message: Message) => void>();
   private onErrorHandlers: Array<(message: Message, error: Error) => void> = [];
 
+  // TODO(reliability): Add request timeouts and cancellation (AbortSignal) support.
+  //   Today, a stuck handler can leave requests pending and leak entries in idListeners.
+
   /**
    * Register a handler for a specific message type
    */
