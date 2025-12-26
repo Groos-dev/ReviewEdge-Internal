@@ -6,7 +6,7 @@ export default defineConfig({
   outDir: 'dist',
   external: ['vscode'],
   sourcemap: true,
-  clean: true,
+  clean: false, // Managed by build script
   dts: true,
   platform: 'node',
   target: 'node20',

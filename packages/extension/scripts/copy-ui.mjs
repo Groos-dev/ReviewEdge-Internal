@@ -15,36 +15,63 @@ if (!fs.existsSync(uiDist)) {
   throw new Error(`UI dist not found at ${uiDist}. Run UI build first.`);
 }
 
+// Clean destination
+if (fs.existsSync(destDir)) {
+  fs.rmSync(destDir, { recursive: true });
+}
 fs.mkdirSync(destDir, { recursive: true });
 
-// Copy sidebar
-const sidebarSource = path.join(uiDist, 'sidebar');
-const sidebarDest = path.join(destDir, 'sidebar');
-if (fs.existsSync(sidebarSource)) {
-  if (fs.existsSync(sidebarDest)) {
-    fs.rmSync(sidebarDest, { recursive: true });
+// Copy JS entry files for each view
+const views = ['sidebar', 'diffviewer', 'workflow'];
+
+for (const view of views) {
+  const viewDest = path.join(destDir, view);
+  fs.mkdirSync(viewDest, { recursive: true });
+
+  // Copy the JS file
+  const jsSource = path.join(uiDist, view, 'index.js');
+  const jsDest = path.join(viewDest, 'index.js');
+  if (fs.existsSync(jsSource)) {
+    fs.copyFileSync(jsSource, jsDest);
+  } else {
+    console.warn(`⚠ JS file not found: ${jsSource}`);
   }
-  fs.cpSync(sidebarSource, sidebarDest, { recursive: true });
 }
 
-// Copy diffviewer
-const diffviewerSource = path.join(uiDist, 'diffviewer');
-const diffviewerDest = path.join(destDir, 'diffviewer');
-if (fs.existsSync(diffviewerSource)) {
-  if (fs.existsSync(diffviewerDest)) {
-    fs.rmSync(diffviewerDest, { recursive: true });
-  }
-  fs.cpSync(diffviewerSource, diffviewerDest, { recursive: true });
+// Copy shared chunks
+const chunksSource = path.join(uiDist, 'chunks');
+const chunksDest = path.join(destDir, 'chunks');
+if (fs.existsSync(chunksSource)) {
+  fs.cpSync(chunksSource, chunksDest, { recursive: true });
+  console.log(`✓ Copied chunks (${fs.readdirSync(chunksSource).length} files)`);
 }
 
-// Copy workflow
-const workflowSource = path.join(uiDist, 'workflow');
-const workflowDest = path.join(destDir, 'workflow');
-if (fs.existsSync(workflowSource)) {
-  if (fs.existsSync(workflowDest)) {
-    fs.rmSync(workflowDest, { recursive: true });
+// Copy assets (CSS files)
+const assetsSource = path.join(uiDist, 'assets');
+const assetsDest = path.join(destDir, 'assets');
+if (fs.existsSync(assetsSource)) {
+  fs.cpSync(assetsSource, assetsDest, { recursive: true });
+  console.log(`✓ Copied assets (${fs.readdirSync(assetsSource).length} files)`);
+}
+
+// Copy codicons - check root node_modules first, then ui package
+let codiconsSource = path.join(repoRoot, 'node_modules', '@vscode', 'codicons', 'dist');
+if (!fs.existsSync(codiconsSource)) {
+  codiconsSource = path.join(repoRoot, 'packages', 'ui', 'node_modules', '@vscode', 'codicons', 'dist');
+}
+
+const codiconsDest = path.join(destDir, 'codicons');
+if (fs.existsSync(codiconsSource)) {
+  fs.mkdirSync(codiconsDest, { recursive: true });
+  for (const file of ['codicon.css', 'codicon.ttf']) {
+    const src = path.join(codiconsSource, file);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(codiconsDest, file));
+    }
   }
-  fs.cpSync(workflowSource, workflowDest, { recursive: true });
+  console.log('✓ Copied codicons files');
+} else {
+  console.warn('⚠ Codicons not found, please run: npm install @vscode/codicons');
 }
 
 console.log('✓ UI files copied to extension dist');

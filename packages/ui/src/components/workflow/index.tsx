@@ -1,12 +1,11 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import baseStyles from '../../styles/base.css?raw';
-import commonStyles from '../../styles/common.css?raw';
-import variablesStyles from '../../styles/variables.css?raw';
-import workflowStyles from '../../styles/workflow.css?raw';
+import '../../styles/variables.css';
+import '../../styles/base.css';
+import '../../styles/common.css';
+import '../../styles/workflow.css';
 import type { PromptNode, Workflow } from '../../types/config';
-import { injectStyles } from '../../utils/injectStyles';
 
 // VS Code API
 declare const acquireVsCodeApi: () => {
@@ -288,9 +287,6 @@ const WorkflowEditorApp: FC = () => {
     </div>
   );
 };
-
-// Inject styles
-injectStyles(variablesStyles + baseStyles + commonStyles + workflowStyles);
 
 // Mount
 const root = document.getElementById('root');

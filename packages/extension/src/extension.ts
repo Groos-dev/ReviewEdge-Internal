@@ -3,14 +3,18 @@ import { CodeReviewCore } from '../../server/src/core/CodeReviewCore.js';
 import { InProcessMessenger } from '../../server/src/protocol/InProcessMessenger.js';
 import type { FromServerProtocol, ToServerProtocol } from '../../server/src/protocol/types.js';
 import type { ReviewComment, ReviewTask } from '../../ui/src/types/config';
+import { DiffViewerProvider } from './providers/DiffViewerProvider';
 import { SidebarProvider } from './providers/SidebarProvider';
 import { CodeReviewClient } from './services/CodeReviewClient';
+import { GitService } from './services/GitService';
 import { TaskService } from './services/TaskService';
 
 // Global instances for in-process communication
 let messenger: InProcessMessenger<ToServerProtocol, FromServerProtocol> | null = null;
 let client: CodeReviewClient | null = null;
 let taskService: TaskService | null = null;
+let gitService: GitService | null = null;
+let diffViewerProvider: DiffViewerProvider | null = null;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   console.log('MCP Code Review: Starting activation');
@@ -23,6 +27,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     new CodeReviewCore(messenger);
     client = new CodeReviewClient(messenger);
     taskService = new TaskService();
+    gitService = new GitService();
     console.log('✓ In-process communication initialized');
 
     // Register Sidebar Provider
@@ -32,6 +37,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       vscode.window.registerWebviewViewProvider(SidebarProvider.viewType, sidebarProvider)
     );
     console.log('✓ Sidebar registered');
+
+    // Register Diff Viewer Provider
+    console.log('Registering diff viewer provider...');
+    diffViewerProvider = new DiffViewerProvider(context.extensionUri, gitService, client);
+    console.log('✓ Diff viewer provider registered');
 
     // Register Commands
     console.log('Registering commands...');
@@ -57,6 +67,8 @@ export function deactivate(): void {
   messenger = null;
   client = null;
   taskService = null;
+  gitService = null;
+  diffViewerProvider = null;
 }
 
 function registerCommands(
@@ -99,6 +111,9 @@ function registerCommands(
         await taskService.selectWorkflowForTask(client, taskId, sidebarProvider);
       }
     ),
+    vscode.commands.registerCommand('mcpCodeReview.viewTaskDiff', async (taskId: string) => {
+      await viewTaskDiff(client, taskId);
+    }),
     vscode.commands.registerCommand('mcpCodeReview.createWorkflow', async () => {
       vscode.window.showInformationMessage('Create workflow functionality');
     }),
@@ -162,6 +177,34 @@ async function renderTaskComments(client: CodeReviewClient): Promise<void> {
   vscode.window.showInformationMessage(
     `Found ${comments.length} comment(s) for task: ${selected.task.name}`
   );
+}
+
+async function viewTaskDiff(client: CodeReviewClient, taskId: string): Promise<void> {
+  const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!workspacePath) {
+    vscode.window.showErrorMessage('No workspace folder found');
+    return;
+  }
+
+  let task: ReviewTask | null = null;
+  try {
+    task = await client.getTask(taskId, workspacePath);
+  } catch {
+    vscode.window.showErrorMessage('Failed to load task');
+    return;
+  }
+
+  if (!task) {
+    vscode.window.showErrorMessage('Task not found');
+    return;
+  }
+
+  if (!diffViewerProvider) {
+    vscode.window.showErrorMessage('Diff viewer not initialized');
+    return;
+  }
+
+  await diffViewerProvider.showDiff(task, workspacePath);
 }
 
 function clearReviews(): void {

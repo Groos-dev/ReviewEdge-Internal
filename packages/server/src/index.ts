@@ -15,16 +15,6 @@ import {
   AddCommentsInputSchema,
   type CodeReviewInput,
   CodeReviewInputSchema,
-  type DeleteTaskInput,
-  DeleteTaskInputSchema,
-  type GetCommentsByTaskInput,
-  GetCommentsByTaskInputSchema,
-  type GetTaskInput,
-  GetTaskInputSchema,
-  type ListTasksInput,
-  ListTasksInputSchema,
-  type ListWorkflowsInput,
-  ListWorkflowsInputSchema,
 } from './schemas.js';
 import type { ReviewComment, ReviewTask } from './types/review.js';
 
@@ -81,64 +71,6 @@ const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
         workspacePath: { type: 'string', description: 'Path to the workspace' },
       },
       required: ['taskId', 'step', 'workspacePath'],
-    },
-  },
-  {
-    name: 'list_workflows',
-    description: 'List workflows for the sidebar UI.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        workspacePath: { type: 'string', description: 'Path to the workspace' },
-      },
-      required: ['workspacePath'],
-    },
-  },
-  {
-    name: 'list_tasks',
-    description: 'List review tasks for the sidebar UI.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        workspacePath: { type: 'string', description: 'Path to the workspace' },
-      },
-      required: ['workspacePath'],
-    },
-  },
-  {
-    name: 'get_task',
-    description: 'Get a single review task by id.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        taskId: { type: 'string', description: 'The review task ID' },
-        workspacePath: { type: 'string', description: 'Path to the workspace' },
-      },
-      required: ['taskId', 'workspacePath'],
-    },
-  },
-  {
-    name: 'delete_task',
-    description: 'Delete a review task and its comments.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        taskId: { type: 'string', description: 'The review task ID' },
-        workspacePath: { type: 'string', description: 'Path to the workspace' },
-      },
-      required: ['taskId', 'workspacePath'],
-    },
-  },
-  {
-    name: 'get_comments_by_task',
-    description: 'List comments for a task (used by the extension UI).',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        taskId: { type: 'string', description: 'The review task ID' },
-        workspacePath: { type: 'string', description: 'Path to the workspace' },
-      },
-      required: ['taskId', 'workspacePath'],
     },
   },
   {
@@ -505,16 +437,6 @@ class MCPCodeReviewServer {
     switch (toolName) {
       case 'codereview':
         return await this.handleCodeReview(args);
-      case 'list_workflows':
-        return await this.handleListWorkflows(args);
-      case 'list_tasks':
-        return await this.handleListTasks(args);
-      case 'get_task':
-        return await this.handleGetTask(args);
-      case 'delete_task':
-        return await this.handleDeleteTask(args);
-      case 'get_comments_by_task':
-        return await this.handleGetCommentsByTask(args);
       case 'add_review_comment':
         return await this.handleAddComment(args);
       case 'add_review_comments':
@@ -532,121 +454,6 @@ class MCPCodeReviewServer {
 
     const handler = new CodeReviewHandler(this);
     return await handler.handle(args, taskId, workspacePath);
-  }
-
-  private async handleListWorkflows(
-    args: unknown
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const input: ListWorkflowsInput = ListWorkflowsInputSchema.parse(args);
-
-    const initialized = await taskReader.initialize(input.workspacePath);
-    if (!initialized) {
-      throw new McpError(McpErrorCodes.INTERNAL_ERROR, 'Failed to access database.');
-    }
-
-    const workflows = await taskReader.getWorkflows();
-    taskReader.close();
-
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify({ workflows }),
-        },
-      ],
-    };
-  }
-
-  private async handleListTasks(
-    args: unknown
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const input: ListTasksInput = ListTasksInputSchema.parse(args);
-
-    const initialized = await taskReader.initialize(input.workspacePath);
-    if (!initialized) {
-      throw new McpError(McpErrorCodes.INTERNAL_ERROR, 'Failed to access database.');
-    }
-
-    const tasks = await taskReader.getTasks();
-    taskReader.close();
-
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify({ tasks }),
-        },
-      ],
-    };
-  }
-
-  private async handleGetTask(
-    args: unknown
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const input: GetTaskInput = GetTaskInputSchema.parse(args);
-
-    const initialized = await taskReader.initialize(input.workspacePath);
-    if (!initialized) {
-      throw new McpError(McpErrorCodes.INTERNAL_ERROR, 'Failed to access database.');
-    }
-
-    const task = await taskReader.getTask(input.taskId);
-    taskReader.close();
-
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify({ task }),
-        },
-      ],
-    };
-  }
-
-  private async handleDeleteTask(
-    args: unknown
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const input: DeleteTaskInput = DeleteTaskInputSchema.parse(args);
-
-    const initialized = await taskReader.initialize(input.workspacePath);
-    if (!initialized) {
-      throw new McpError(McpErrorCodes.INTERNAL_ERROR, 'Failed to access database.');
-    }
-
-    const deleted = await taskReader.deleteTask(input.taskId);
-    taskReader.close();
-
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify({ success: deleted }),
-        },
-      ],
-    };
-  }
-
-  private async handleGetCommentsByTask(
-    args: unknown
-  ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
-    const input: GetCommentsByTaskInput = GetCommentsByTaskInputSchema.parse(args);
-
-    const initialized = await taskReader.initialize(input.workspacePath);
-    if (!initialized) {
-      throw new McpError(McpErrorCodes.INTERNAL_ERROR, 'Failed to access database.');
-    }
-
-    const comments = await taskReader.getCommentsByTask(input.taskId);
-    taskReader.close();
-
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify({ comments }),
-        },
-      ],
-    };
   }
 
   private async handleAddComment(

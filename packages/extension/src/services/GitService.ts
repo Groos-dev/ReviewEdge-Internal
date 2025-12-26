@@ -110,4 +110,52 @@ export class GitService {
       return false;
     }
   }
+
+  /**
+   * Get git diff between two commits
+   * @param workspacePath - The workspace path to execute git commands
+   * @param baseCommit - The base commit hash
+   * @param headCommit - The head commit hash
+   * @returns Git diff output string
+   * @throws Error if failed to get diff
+   */
+  async getDiff(workspacePath: string, baseCommit: string, headCommit: string): Promise<string> {
+    try {
+      const { stdout } = await execAsync(`git diff ${baseCommit}..${headCommit}`, {
+        cwd: workspacePath,
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer for large diffs
+      });
+      return stdout;
+    } catch (error) {
+      console.error('[GitService] Failed to get diff:', error);
+      throw new Error(`Failed to get diff between ${baseCommit} and ${headCommit}`);
+    }
+  }
+
+  /**
+   * Get changed files between two commits
+   * @param workspacePath - The workspace path to execute git commands
+   * @param baseCommit - The base commit hash
+   * @param headCommit - The head commit hash
+   * @returns Array of changed file paths
+   * @throws Error if failed to get changed files
+   */
+  async getChangedFiles(
+    workspacePath: string,
+    baseCommit: string,
+    headCommit: string
+  ): Promise<string[]> {
+    try {
+      const { stdout } = await execAsync(`git diff --name-only ${baseCommit}..${headCommit}`, {
+        cwd: workspacePath,
+      });
+      return stdout
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    } catch (error) {
+      console.error('[GitService] Failed to get changed files:', error);
+      throw new Error(`Failed to get changed files between ${baseCommit} and ${headCommit}`);
+    }
+  }
 }

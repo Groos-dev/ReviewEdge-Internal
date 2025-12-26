@@ -1,13 +1,348 @@
 /**
  * Diff viewer component styles
- * Matches VSCode's native panel and list styles
+ * Uses VS Code CSS variables for automatic theme adaptation
  */
 
-.diffviewer-container {
+.diff-viewer-container {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--vscode-panel-background, var(--vscode-editor-background));
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+}
+
+.diff-viewer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  background-color: var(--vscode-panel-background);
+}
+
+.toolbar-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-count {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+}
+
+.file-path {
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 12px;
+  color: var(--vscode-foreground);
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background-color: var(--vscode-panel-border);
+  margin: 0 8px;
+}
+
+.toolbar-button {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 2px;
+  color: var(--vscode-foreground);
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.1s,
+    border-color 0.1s;
+}
+
+.toolbar-button:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.toolbar-button.active {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+/* View Toggle Icon Group */
+.view-toggle-group {
+  display: flex;
+  gap: 2px;
+  background-color: var(--vscode-input-background, rgba(255, 255, 255, 0.05));
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  opacity: 0.6;
+  transition:
+    background-color 0.15s,
+    opacity 0.15s;
+}
+
+.icon-button:hover {
+  background-color: var(--vscode-list-hoverBackground);
+  opacity: 0.9;
+}
+
+.icon-button.active {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground, var(--vscode-foreground));
+  opacity: 1;
+}
+
+.view-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.view-icon.view-icon-split {
+  transform: rotate(90deg);
+}
+
+.view-icon.active {
+  color: var(--vscode-list-activeSelectionForeground, var(--vscode-foreground));
+}
+
+.diff-viewer-content {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--vscode-editor-background);
+}
+
+/* File diff container */
+.file-diff {
+  margin-bottom: 24px;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.file-diff:last-child {
+  margin-bottom: 0;
+}
+
+.file-header {
+  padding: 8px 12px;
+  background-color: var(--vscode-panel-background);
+  border-bottom: 1px solid var(--vscode-panel-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.file-header .file-path {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collapse-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--vscode-foreground);
+  transition: background-color 0.1s;
+}
+
+.collapse-toggle:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.collapse-icon {
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+
+.collapse-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.file-action-button {
+  padding: 2px 8px;
+  background: transparent;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 3px;
+  color: var(--vscode-foreground);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.1s;
+  white-space: nowrap;
+}
+
+.file-action-button:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+/* Loading, error, and empty states */
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--vscode-progressBar-background);
+  border-top-color: var(--vscode-progressBar-foreground, var(--vscode-button-background));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-state p,
+.empty-state p {
+  color: var(--vscode-descriptionForeground);
+  font-size: 14px;
+  margin: 0;
+}
+
+.error-state h3 {
+  color: var(--vscode-errorForeground);
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.error-state p {
+  color: var(--vscode-foreground);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Override git-diff-view CSS variables to match VS Code theme */
+/* These variables are defined in @git-diff-view/react _com.css */
+
+/* Light theme - use VS Code diffEditor variables */
+[data-theme="light"] .diff-style-root {
+  --diff-border--: var(--vscode-panel-border, #dedede);
+  --diff-add-content--: var(--vscode-diffEditor-insertedTextBackground, #dafbe1);
+  --diff-del-content--: var(--vscode-diffEditor-removedTextBackground, #ffebe9);
+  --diff-add-lineNumber--: var(--vscode-diffEditor-insertedLineBackground, #aceebb);
+  --diff-del-lineNumber--: var(--vscode-diffEditor-removedLineBackground, #ffcecb);
+  --diff-plain-content--: var(--vscode-editor-background, #ffffff);
+  --diff-expand-content--: var(--vscode-editorGutter-background, #fafafa);
+  --diff-plain-lineNumber--: var(--vscode-editorGutter-background, #fafafa);
+  --diff-expand-lineNumber--: var(--vscode-editorGutter-background, #fafafa);
+  --diff-plain-lineNumber-color--: var(--vscode-editorLineNumber-foreground, #555555);
+  --diff-expand-lineNumber-color--: var(--vscode-editorLineNumber-foreground, #555555);
+  --diff-hunk-content--: var(--vscode-diffEditor-diagonalFill, #ddf4ff);
+  --diff-hunk-lineNumber--: var(--vscode-diffEditor-diagonalFill, #b6e3ff);
+  --diff-hunk-lineNumber-hover--: var(--vscode-textLink-foreground, #0969da);
+  --diff-add-content-highlight--: var(--vscode-diffEditor-insertedTextBackground, #aceebb);
+  --diff-del-content-highlight--: var(--vscode-diffEditor-removedTextBackground, #ffcecb);
+  --diff-add-widget--: var(--vscode-button-background, #0969d2);
+  --diff-add-widget-color--: var(--vscode-button-foreground, #ffffff);
+  --diff-empty-content--: var(--vscode-editorGutter-background, #fafafa);
+  --diff-hunk-content-color--: var(--vscode-descriptionForeground, #777777);
+
+  color: var(--vscode-editor-foreground, black);
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+/* Dark theme - use VS Code diffEditor variables */
+[data-theme="dark"] .diff-style-root {
+  --diff-border--: var(--vscode-panel-border, #3d444d);
+  --diff-add-content--: var(--vscode-diffEditor-insertedTextBackground, rgba(155, 185, 85, 0.2));
+  --diff-del-content--: var(--vscode-diffEditor-removedTextBackground, rgba(255, 0, 0, 0.2));
+  --diff-add-lineNumber--: var(--vscode-diffEditor-insertedLineBackground, #284228);
+  --diff-del-lineNumber--: var(--vscode-diffEditor-removedLineBackground, #4f2828);
+  --diff-plain-content--: var(--vscode-editor-background, #0d1117);
+  --diff-expand-content--: var(--vscode-editorGutter-background, #161b22);
+  --diff-plain-lineNumber--: var(--vscode-editorGutter-background, #161b22);
+  --diff-expand-lineNumber--: var(--vscode-editorGutter-background, #161b22);
+  --diff-plain-lineNumber-color--: var(--vscode-editorLineNumber-foreground, #a0aaab);
+  --diff-expand-lineNumber-color--: var(--vscode-editorLineNumber-foreground, #a0aaab);
+  --diff-hunk-content--: var(--vscode-diffEditor-diagonalFill, #131d2e);
+  --diff-hunk-lineNumber--: var(--vscode-diffEditor-diagonalFill, #0c2d6b);
+  --diff-hunk-lineNumber-hover--: var(--vscode-textLink-foreground, #1f6feb);
+  --diff-add-content-highlight--: var(
+    --vscode-diffEditor-insertedTextBackground,
+    rgba(155, 185, 85, 0.4)
+  );
+  --diff-del-content-highlight--: var(
+    --vscode-diffEditor-removedTextBackground,
+    rgba(255, 0, 0, 0.4)
+  );
+  --diff-add-widget--: var(--vscode-button-background, #0969d2);
+  --diff-add-widget-color--: var(--vscode-button-foreground, #ffffff);
+  --diff-empty-content--: var(--vscode-editorGutter-background, #161b22);
+  --diff-hunk-content-color--: var(--vscode-descriptionForeground, #9298a0);
+
+  color: var(--vscode-editor-foreground, white);
+  font-family: var(--vscode-editor-font-family, monospace);
+}
+
+/* Override diff view wrapper styles */
+.diff-viewer-content .diff-view-wrapper {
+  font-family: var(--vscode-editor-font-family, monospace) !important;
+  background-color: var(--vscode-editor-background) !important;
+}
+
+/* Ensure syntax highlighting adapts to theme */
+.diff-viewer-content [data-theme="light"] .diff-line-syntax-raw * {
+  color: var(--diff-view-light, inherit);
+}
+
+.diff-viewer-content [data-theme="dark"] .diff-line-syntax-raw * {
+  color: var(--diff-view-dark, inherit);
 }
 
 .diffviewer-header {
@@ -294,4 +629,375 @@
   text-align: center;
   color: var(--vscode-descriptionForeground);
   font-size: var(--vscode-font-size);
+}
+
+/* Lazy loading placeholder */
+.diff-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  background: var(--vscode-editor-background);
+  border: 1px dashed var(--vscode-editorWidget-border, var(--vscode-widget-border, #454545));
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+/* Switching indicator */
+.switching-indicator {
+  margin-left: 12px;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.8;
+}
+
+/* Disabled button state */
+.icon-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   Comments Styles
+   ============================================ */
+
+/* Comments count badge in toolbar */
+.comments-count-badge {
+  margin-left: 12px;
+  padding: 2px 8px;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* File comments badge */
+.file-comments-badge {
+  margin-left: 8px;
+  padding: 1px 6px;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* File diff content wrapper */
+.file-diff-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Split mode - side by side layout for comments */
+.file-diff-content.split-mode {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 8px;
+}
+
+.file-diff-content.split-mode .diff-view-wrapper {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Unified mode - stacked layout */
+.file-diff-content.unified-mode {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Comments panel for a file */
+.file-comments-panel {
+  border: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, #454545));
+  border-radius: 4px;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+}
+
+/* Split mode comments - fixed width sidebar */
+.file-comments-panel.split-mode {
+  max-height: 500px;
+  overflow-y: auto;
+  position: sticky;
+  top: 8px;
+}
+
+/* Unified mode comments - full width below diff */
+.file-comments-panel.unified-mode {
+  margin-top: 8px;
+}
+
+.comments-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, #454545));
+  background: var(--vscode-sideBarSectionHeader-background, rgba(128, 128, 128, 0.1));
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-foreground);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.comments-list {
+  padding: 8px;
+}
+
+/* Responsive: collapse to stacked layout on narrow screens */
+@media (max-width: 900px) {
+  .file-diff-content.split-mode {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .file-comments-panel.split-mode {
+    max-height: none;
+    position: static;
+    margin-top: 8px;
+  }
+}
+
+/* Single comment item */
+.comment-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border-left: 3px solid;
+  background: var(--vscode-editor-background);
+}
+
+.comment-item:last-child {
+  margin-bottom: 0;
+}
+
+.comment-critical {
+  border-left-color: var(--vscode-editorError-foreground, #f14c4c);
+  background: var(--vscode-inputValidation-errorBackground, rgba(241, 76, 76, 0.1));
+}
+
+.comment-warning {
+  border-left-color: var(--vscode-editorWarning-foreground, #cca700);
+  background: var(--vscode-inputValidation-warningBackground, rgba(204, 167, 0, 0.1));
+}
+
+.comment-info {
+  border-left-color: var(--vscode-editorInfo-foreground, #3794ff);
+  background: var(--vscode-inputValidation-infoBackground, rgba(55, 148, 255, 0.1));
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+/* Severity badge */
+.severity-badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.severity-critical {
+  background: var(--vscode-editorError-foreground, #f14c4c);
+  color: #fff;
+}
+
+.severity-warning {
+  background: var(--vscode-editorWarning-foreground, #cca700);
+  color: #000;
+}
+
+.severity-info {
+  background: var(--vscode-editorInfo-foreground, #3794ff);
+  color: #fff;
+}
+
+.comment-category {
+  color: var(--vscode-descriptionForeground);
+  font-weight: 500;
+}
+
+.comment-line {
+  color: var(--vscode-descriptionForeground);
+  font-size: 10px;
+}
+
+.comment-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--vscode-foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Comment suggestion */
+.comment-suggestion {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.1));
+  border-radius: 4px;
+}
+
+.suggestion-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 4px;
+}
+
+.suggestion-code {
+  margin: 0;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--vscode-foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================
+   Inline Comments (shown on specific lines)
+   ============================================ */
+
+.inline-comments-container {
+  padding: 8px 12px;
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
+  border-top: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, #454545));
+  border-bottom: 1px solid var(--vscode-editorWidget-border, var(--vscode-widget-border, #454545));
+}
+
+.inline-comment {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  border-left: 3px solid;
+  background: var(--vscode-editor-background);
+}
+
+.inline-comment:last-child {
+  margin-bottom: 0;
+}
+
+.inline-comment-critical {
+  border-left-color: var(--vscode-editorError-foreground, #f14c4c);
+  background: var(--vscode-inputValidation-errorBackground, rgba(241, 76, 76, 0.1));
+}
+
+.inline-comment-warning {
+  border-left-color: var(--vscode-editorWarning-foreground, #cca700);
+  background: var(--vscode-inputValidation-warningBackground, rgba(204, 167, 0, 0.1));
+}
+
+.inline-comment-info {
+  border-left-color: var(--vscode-editorInfo-foreground, #3794ff);
+  background: var(--vscode-inputValidation-infoBackground, rgba(55, 148, 255, 0.1));
+}
+
+.inline-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.inline-comment-category {
+  color: var(--vscode-descriptionForeground);
+  font-weight: 500;
+}
+
+.inline-comment-body {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--vscode-foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.inline-comment-suggestion {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.1));
+  border-radius: 3px;
+}
+
+.inline-comment-suggestion .suggestion-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 3px;
+}
+
+.inline-comment-suggestion .suggestion-code {
+  margin: 0;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--vscode-foreground);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================
+   Clickable Line Numbers - Navigate to Source
+   ============================================ */
+
+/* Wrapper for click event delegation */
+.diff-view-clickable {
+  width: 100%;
+}
+
+/* Line number elements in Split View (new side only) */
+.new-diff-table [data-line-num],
+.new-diff-table-wrapper [data-line-num],
+[data-mode="new"] [data-line-num],
+[data-side="new"] [data-line-num] {
+  cursor: pointer;
+  transition: color 0.15s, text-decoration 0.15s;
+}
+
+.new-diff-table [data-line-num]:hover,
+.new-diff-table-wrapper [data-line-num]:hover,
+[data-mode="new"] [data-line-num]:hover,
+[data-side="new"] [data-line-num]:hover {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  text-decoration: underline;
+}
+
+/* Line number elements in Unified View (new line numbers only) */
+[data-line-new-num] {
+  cursor: pointer;
+  transition: color 0.15s, text-decoration 0.15s;
+}
+
+[data-line-new-num]:hover {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  text-decoration: underline;
+}
+
+/* Old side line numbers - show not-allowed cursor as navigation not supported yet */
+.old-diff-table [data-line-num],
+.old-diff-table-wrapper [data-line-num],
+[data-mode="old"] [data-line-num],
+[data-side="old"] [data-line-num],
+[data-line-old-num] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Override hover for old side - no visual indication as not clickable */
+.old-diff-table [data-line-num]:hover,
+.old-diff-table-wrapper [data-line-num]:hover,
+[data-mode="old"] [data-line-num]:hover,
+[data-side="old"] [data-line-num]:hover,
+[data-line-old-num]:hover {
+  color: inherit;
+  text-decoration: none;
 }

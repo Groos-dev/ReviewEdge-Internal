@@ -1,12 +1,12 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import baseStyles from '../../styles/base.css?raw';
-import commonStyles from '../../styles/common.css?raw';
-import sidebarStyles from '../../styles/sidebar.css?raw';
-import variablesStyles from '../../styles/variables.css?raw';
+// Note: codicon.css is loaded by the extension via webview HTML
+import '../../styles/variables.css';
+import '../../styles/base.css';
+import '../../styles/common.css';
+import '../../styles/sidebar.css';
 import type { ReviewTask, Workflow } from '../../types/config';
-import { injectStyles } from '../../utils/injectStyles';
 
 // VS Code API
 declare const acquireVsCodeApi: () => {
@@ -29,6 +29,11 @@ interface WebviewMessage {
 }
 
 const DEFAULT_WORKFLOW_ID = 'default';
+
+// Codicon component for VS Code icons
+const Icon: FC<{ name: string; className?: string }> = ({ name, className = '' }) => (
+  <i className={`codicon codicon-${name} ${className}`} />
+);
 
 // Main Component
 const SidebarApp: FC = () => {
@@ -63,24 +68,36 @@ const SidebarApp: FC = () => {
             className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
             onClick={() => setActiveTab('tasks')}
           >
-            📋 Tasks
+            <Icon name="tasklist" />
+            <span>Tasks</span>
           </button>
           <button
             type="button"
             className={`tab ${activeTab === 'workflows' ? 'active' : ''}`}
             onClick={() => setActiveTab('workflows')}
           >
-            🔄 Workflows
+            <Icon name="symbol-event" />
+            <span>Workflows</span>
           </button>
         </div>
-        <button
-          type="button"
-          className="settings-btn"
-          onClick={() => sendMessage('openSettings')}
-          title="Settings"
-        >
-          ⚙️
-        </button>
+        <div className="header-actions">
+          <button
+            type="button"
+            className="header-action"
+            onClick={() => sendMessage(activeTab === 'tasks' ? 'createTask' : 'createWorkflow')}
+            title={activeTab === 'tasks' ? 'New Task' : 'New Workflow'}
+          >
+            <Icon name="add" />
+          </button>
+          <button
+            type="button"
+            className="header-action"
+            onClick={() => sendMessage('openSettings')}
+            title="Settings"
+          >
+            <Icon name="settings-gear" />
+          </button>
+        </div>
       </div>
 
       {activeTab === 'tasks' ? (
@@ -88,15 +105,6 @@ const SidebarApp: FC = () => {
       ) : (
         <WorkflowsView workflows={state.workflows} sendMessage={sendMessage} />
       )}
-
-      <button
-        type="button"
-        className="add-btn"
-        onClick={() => sendMessage(activeTab === 'tasks' ? 'createTask' : 'createWorkflow')}
-        title={activeTab === 'tasks' ? 'Create Task' : 'Create Workflow'}
-      >
-        +
-      </button>
     </div>
   );
 };
@@ -112,11 +120,11 @@ const TasksView: FC<TasksViewProps> = ({ tasks, workflows, sendMessage }) => {
   if (tasks.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-state-icon">📋</div>
-        <div>No review tasks</div>
-        <div style={{ fontSize: '11px', marginTop: '8px' }}>
-          Create a task to start reviewing code
+        <div className="empty-state-icon">
+          <Icon name="tasklist" />
         </div>
+        <div className="empty-state-title">No review tasks</div>
+        <div className="empty-state-desc">Create a task to start reviewing code</div>
       </div>
     );
   }
@@ -127,105 +135,98 @@ const TasksView: FC<TasksViewProps> = ({ tasks, workflows, sendMessage }) => {
         const workflow = workflows.find((w) => w.id === task.workflowId);
 
         return (
-          <div key={task.id} className="list-item">
-            <div className="item-header">
-              <button
-                type="button"
-                className="item-name"
-                onClick={() => sendMessage('openTask', task.id)}
-              >
-                {task.name}
-              </button>
-              <div className="item-actions">
+          <div
+            key={task.id}
+            className="task-card"
+            onClick={() => sendMessage('viewTaskDiff', task.id)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage('viewTaskDiff', task.id)}
+            tabIndex={0}
+            role="button"
+          >
+            {/* Card Header - Branch Flow */}
+            <div className="task-card-header">
+              <div className="task-title">
+                <Icon name="git-pull-request" className="task-icon" />
+                <span className="branch-name source">{task.headBranch}</span>
+              </div>
+
+              {/* Hover Actions */}
+              <div className="task-actions">
                 <button
                   type="button"
-                  className="icon-btn run-btn"
+                  className="action-btn primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     sendMessage('runTask', task.id);
                   }}
                   title="Run Review"
                 >
-                  ▶️
+                  <Icon name="play" />
                 </button>
                 <button
                   type="button"
-                  className="icon-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sendMessage('selectWorkflowForTask', task.id);
-                  }}
-                  title="Select Workflow"
-                >
-                  🔄
-                </button>
-                <button
-                  type="button"
-                  className="icon-btn"
+                  className="action-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     sendMessage('editTask', task.id);
                   }}
                   title="Edit"
                 >
-                  ✏️
+                  <Icon name="pencil" />
                 </button>
                 <button
                   type="button"
-                  className="icon-btn"
+                  className="action-btn danger"
                   onClick={(e) => {
                     e.stopPropagation();
                     sendMessage('deleteTask', task.id);
                   }}
                   title="Delete"
                 >
-                  🗑️
+                  <Icon name="trash" />
                 </button>
               </div>
             </div>
 
-            <button
-              type="button"
-              className="task-branches"
-              onClick={() => sendMessage('openTask', task.id)}
-            >
-              <span className="branch-tag">{task.headBranch}</span>
-              <span className="commit-tag">{task.headCommit.substring(0, 7)}</span>
-              <span className="arrow">→</span>
-              <span className="branch-tag">{task.baseBranch}</span>
-              <span className="commit-tag">{task.baseCommit.substring(0, 7)}</span>
-            </button>
+            {/* Target Branch */}
+            <div className="task-target">
+              <span className="target-arrow">↳</span>
+              <span className="target-label">into</span>
+              <span className="branch-name target">{task.baseBranch}</span>
+            </div>
 
-            {workflow ? (
-              <div className="workflow-info">
-                🔄{' '}
+            {/* Metadata Row */}
+            <div className="task-meta">
+              <span className="commit-hash">{task.headCommit.substring(0, 7)}</span>
+              <span className="meta-separator">•</span>
+              {workflow ? (
                 <button
                   type="button"
-                  className="workflow-name"
+                  className="workflow-link"
                   onClick={(e) => {
                     e.stopPropagation();
                     sendMessage('openWorkflow', workflow.id);
                   }}
                   title="View workflow"
                 >
-                  {workflow.name}
+                  <Icon name="pass-filled" className="workflow-icon active" />
+                  <span>{workflow.name}</span>
                 </button>
-              </div>
-            ) : (
-              <div className="workflow-info">
+              ) : (
                 <button
                   type="button"
-                  className="workflow-empty"
+                  className="workflow-link empty"
                   onClick={(e) => {
                     e.stopPropagation();
                     sendMessage('selectWorkflowForTask', task.id);
                   }}
                   title="Select workflow"
                 >
-                  No workflow
+                  <Icon name="error" className="workflow-icon" />
+                  <span>No workflow</span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         );
       })}
@@ -243,11 +244,11 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
   if (workflows.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-state-icon">🔄</div>
-        <div>No workflows yet</div>
-        <div style={{ fontSize: '11px', marginTop: '8px' }}>
-          Create a workflow to define your review process
+        <div className="empty-state-icon">
+          <Icon name="symbol-event" />
         </div>
+        <div className="empty-state-title">No workflows yet</div>
+        <div className="empty-state-desc">Create a workflow to define your review process</div>
       </div>
     );
   }
@@ -264,71 +265,82 @@ const WorkflowsView: FC<WorkflowsViewProps> = ({ workflows, sendMessage }) => {
         const isDefault = workflow.id === DEFAULT_WORKFLOW_ID;
 
         return (
-          <button
-            type="button"
-            key={workflow.id}
-            className={`list-item ${isDefault ? 'default-workflow' : ''}`}
-            onClick={() => sendMessage('openWorkflow', workflow.id)}
-          >
-            <div className="item-header">
-              <div className="item-name">
-                {workflow.name}
-                {isDefault && <span className="system-badge">系统默认</span>}
-              </div>
-              <div className="item-actions">
+          <div key={workflow.id} className={`workflow-card ${isDefault ? 'default' : ''}`}>
+            <div className="workflow-card-header">
+              <button
+                type="button"
+                className="workflow-title"
+                onClick={() => sendMessage('openWorkflow', workflow.id)}
+              >
+                <Icon
+                  name={isDefault ? 'verified-filled' : 'symbol-event'}
+                  className="workflow-title-icon"
+                />
+                <span>{workflow.name}</span>
+                {isDefault && <span className="default-badge">Default</span>}
+              </button>
+
+              <div className="workflow-actions">
+                <button
+                  type="button"
+                  className="action-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    sendMessage('openWorkflow', workflow.id);
+                  }}
+                  title="Edit Workflow"
+                >
+                  <Icon name="pencil" />
+                </button>
                 {!isDefault && (
                   <button
                     type="button"
-                    className="icon-btn"
+                    className="action-btn danger"
                     onClick={(e) => {
                       e.stopPropagation();
                       sendMessage('deleteWorkflow', workflow.id);
                     }}
                     title="Delete"
                   >
-                    🗑️
+                    <Icon name="trash" />
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="item-detail">
-              {workflow.nodes.length} step(s) • Updated:{' '}
-              {new Date(workflow.updatedAt).toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+            <div className="workflow-meta">
+              <span className="step-count">
+                <Icon name="list-tree" />
+                {workflow.nodes.length} step{workflow.nodes.length !== 1 ? 's' : ''}
+              </span>
+              <span className="meta-separator">•</span>
+              <span className="update-time">
+                {new Date(workflow.updatedAt).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </span>
             </div>
 
-            <div className="workflow-nodes">
-              {workflow.nodes.length > 0 ? (
-                workflow.nodes.map((node) => (
-                  <span key={node.id} className="node-badge">
-                    {node.name}
+            {workflow.nodes.length > 0 && (
+              <div className="workflow-steps">
+                {workflow.nodes.slice(0, 3).map((node, index) => (
+                  <span key={node.id} className="step-badge">
+                    <span className="step-number">{index + 1}</span>
+                    <span className="step-name">{node.name}</span>
                   </span>
-                ))
-              ) : (
-                <span
-                  style={{
-                    fontSize: '11px',
-                    color: 'var(--vscode-descriptionForeground)',
-                  }}
-                >
-                  No steps defined
-                </span>
-              )}
-            </div>
-          </button>
+                ))}
+                {workflow.nodes.length > 3 && (
+                  <span className="step-more">+{workflow.nodes.length - 3}</span>
+                )}
+              </div>
+            )}
+          </div>
         );
       })}
     </div>
   );
 };
-
-// Inject styles
-injectStyles(variablesStyles + baseStyles + commonStyles + sidebarStyles);
 
 // Mount
 const root = document.getElementById('root');

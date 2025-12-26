@@ -1,8 +1,12 @@
 /**
  * Sidebar component styles
- * Matches VSCode's native sidebar and tree view styles
+ * Modern card-based design with clear visual hierarchy
+ * Uses VS Code's native CSS variables for theme integration
  */
 
+/* ========================================
+   Container & Layout
+   ======================================== */
 .sidebar-container {
   height: 100vh;
   display: flex;
@@ -10,6 +14,9 @@
   background-color: var(--vscode-sideBar-background, var(--vscode-editor-background));
 }
 
+/* ========================================
+   Header & Tabs
+   ======================================== */
 .header {
   display: flex;
   justify-content: space-between;
@@ -18,7 +25,7 @@
   top: 0;
   background: var(--vscode-sideBar-background, var(--vscode-editor-background));
   z-index: 10;
-  border-bottom: 1px solid var(--vscode-sideBar-border, var(--vscode-panel-border));
+  border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border, transparent);
   padding: 0;
 }
 
@@ -29,308 +36,469 @@
 
 .tab {
   flex: 1;
-  padding: 8px 12px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
   cursor: pointer;
+  border: none;
   border-bottom: 2px solid transparent;
   color: var(--vscode-foreground);
   background: transparent;
-  border: none;
-  font-size: var(--vscode-font-size);
+  font-size: 11px;
   font-weight: 400;
-  transition:
-    background-color 0.1s,
-    border-bottom-color 0.1s;
-}
-
-.tab.active {
-  border-bottom-color: var(--vscode-tab-activeBorderTop, var(--vscode-focusBorder));
-  color: var(--vscode-foreground);
-  font-weight: 400;
+  opacity: 0.6;
+  transition: all 0.1s ease;
 }
 
 .tab:hover {
+  opacity: 0.9;
   background-color: var(--vscode-list-hoverBackground);
 }
 
-.settings-btn {
-  padding: 4px 8px;
+.tab.active {
+  opacity: 1;
+  border-bottom-color: var(--vscode-focusBorder);
+  color: var(--vscode-foreground);
+}
+
+.tab .codicon {
+  font-size: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 4px;
+}
+
+.header-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   cursor: pointer;
   color: var(--vscode-icon-foreground, var(--vscode-foreground));
   background: transparent;
   border: none;
-  font-size: var(--vscode-font-size);
-  opacity: 0.7;
-  transition:
-    opacity 0.1s,
-    background-color 0.1s;
+  opacity: 0.6;
+  transition: all 0.1s ease;
   border-radius: 3px;
-  margin-right: 4px;
 }
 
-.settings-btn:hover {
+.header-action:hover {
   opacity: 1;
   background-color: var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground));
 }
 
+.header-action .codicon {
+  font-size: 14px;
+}
+
+/* ========================================
+   Content Area
+   ======================================== */
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 4px;
-  padding-bottom: 60px;
+  padding: 4px 6px;
 }
 
-.list-item {
+/* ========================================
+   Empty State
+   ======================================== */
+.empty-state {
   display: flex;
   flex-direction: column;
-  padding: 6px 8px;
-  margin: 1px 4px;
-  border-radius: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 0.1s;
-  border: none;
-  text-align: left;
-}
-
-.list-item:hover {
-  background-color: var(--vscode-list-hoverBackground);
-}
-
-.list-item:focus {
-  outline: 1px solid var(--vscode-focusBorder);
-  outline-offset: -1px;
-}
-
-.list-item.default-workflow {
-  border-left: 3px solid var(--vscode-focusBorder);
-  padding-left: 5px;
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.item-name {
-  font-weight: 400;
-  margin-bottom: 2px;
-  word-break: break-word;
-  font-size: var(--vscode-font-size);
-  color: var(--vscode-foreground);
-  flex: 1;
-  background: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  padding: 0;
-}
-
-.item-name:hover {
-  color: var(--vscode-textLink-activeForeground);
-}
-
-.item-actions {
-  display: flex;
-  gap: 2px;
-  opacity: 0;
-  transition: opacity 0.1s;
   align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px 16px;
+  text-align: center;
 }
 
-.list-item:hover .item-actions {
-  opacity: 1;
+.empty-state-icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+  color: var(--vscode-foreground);
 }
 
-.icon-btn {
-  padding: 3px 4px;
-  cursor: pointer;
-  border-radius: 2px;
+.empty-state-icon .codicon {
+  font-size: 24px;
+}
+
+.empty-state-title {
   font-size: 12px;
-  background: transparent;
-  border: none;
-  color: var(--vscode-icon-foreground, var(--vscode-foreground));
-  transition: background-color 0.1s;
+  font-weight: 500;
+  color: var(--vscode-foreground);
+  margin-bottom: 4px;
 }
 
-.icon-btn.run-btn {
-  background: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
-  border-radius: 2px;
-  padding: 2px 8px;
-  font-size: 11px;
-}
-
-.icon-btn.run-btn:hover {
-  background: var(--vscode-button-hoverBackground);
-}
-
-.icon-btn:hover:not(.run-btn) {
-  background-color: var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground));
-}
-
-.item-detail {
+.empty-state-desc {
   font-size: 11px;
   color: var(--vscode-descriptionForeground);
-  margin-bottom: 2px;
   line-height: 1.4;
+  opacity: 0.7;
 }
 
-.task-branches {
+/* ========================================
+   Task Card
+   ======================================== */
+.task-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.1s ease;
+  cursor: pointer;
+  outline: none;
+}
+
+.task-card:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.task-card:focus-visible {
+  border-color: var(--vscode-focusBorder);
+}
+
+.task-card:hover .task-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Task Header */
+.task-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 1px;
+}
+
+.task-title {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--vscode-descriptionForeground);
-  margin-top: 4px;
-  line-height: 1.4;
-  background: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  padding: 0;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
 }
 
-.task-branches:hover .branch-tag,
-.task-branches:hover .commit-tag {
-  background: var(--vscode-badge-background);
-  opacity: 0.9;
+.task-icon {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #73c991);
+  flex-shrink: 0;
+  font-size: 13px;
 }
 
-.branch-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--vscode-inputOption-activeBackground);
-  color: var(--vscode-inputOption-activeForeground);
-  font-size: 10px;
+.branch-name {
   font-weight: 500;
-  font-family: var(--vscode-font-family);
-  transition: all 0.1s;
+  font-size: 12px;
+  color: var(--vscode-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.1s ease;
 }
 
-.commit-tag {
-  display: inline-flex;
+.branch-name.source {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #73c991);
+}
+
+.branch-name.target {
+  color: var(--vscode-descriptionForeground);
+}
+
+/* Task Actions - Hidden by default */
+.task-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: flex;
   align-items: center;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--vscode-badge-background);
-  color: var(--vscode-badge-foreground);
-  font-size: 10px;
-  font-family: var(--vscode-editor-font-family, monospace);
-  font-weight: 400;
-  transition: all 0.1s;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--vscode-icon-foreground, var(--vscode-foreground));
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0.6;
+  transition: all 0.1s ease;
 }
 
-.arrow {
+.action-btn .codicon {
+  font-size: 12px;
+}
+
+.action-btn:hover {
+  opacity: 1;
+  background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+}
+
+.action-btn.primary {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #73c991);
+}
+
+.action-btn.primary:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+  color: var(--vscode-gitDecoration-untrackedResourceForeground, #93c993);
+}
+
+.action-btn.danger:hover {
+  color: var(--vscode-errorForeground, #f14c4c);
+}
+
+/* Task Target */
+.task-target {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 4px 19px;
+  font-size: 11px;
+}
+
+.target-arrow {
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.5;
+  font-size: 11px;
+}
+
+.target-label {
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+}
+
+/* Task Metadata */
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+  padding-left: 19px;
+}
+
+.commit-hash {
+  font-family: var(--vscode-editor-font-family, 'SF Mono', Monaco, monospace);
+  font-size: 9px;
   color: var(--vscode-descriptionForeground);
   opacity: 0.6;
 }
 
-.workflow-info {
+.meta-separator {
+  opacity: 0.4;
+}
+
+.workflow-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--vscode-descriptionForeground);
-  line-height: 1.4;
-}
-
-.workflow-name {
-  color: var(--vscode-textLink-foreground);
-  cursor: pointer;
-  text-decoration: none;
+  gap: 3px;
+  padding: 0;
+  margin: 0;
   background: transparent;
   border: none;
-  padding: 0;
-  font-size: inherit;
-  font-family: inherit;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--vscode-textLink-foreground);
+  transition: color 0.1s ease;
 }
 
-.workflow-name:hover {
+.workflow-link:hover {
+  color: var(--vscode-textLink-activeForeground);
   text-decoration: underline;
+}
+
+.workflow-link.empty {
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+.workflow-link.empty:hover {
+  color: var(--vscode-foreground);
+  opacity: 1;
+  text-decoration: none;
+}
+
+.workflow-icon {
+  font-size: 10px;
+}
+
+.workflow-icon.active {
+  color: var(--vscode-gitDecoration-addedResourceForeground, #73c991);
+}
+
+/* ========================================
+   Workflow Card
+   ======================================== */
+.workflow-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  margin-bottom: 1px;
+  border-radius: 3px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.1s ease;
+}
+
+.workflow-card:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.workflow-card:hover .workflow-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.workflow-card.default {
+  border-left: 2px solid var(--vscode-gitDecoration-addedResourceForeground, #73c991);
+  padding-left: 8px;
+}
+
+/* Workflow Header */
+.workflow-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.workflow-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vscode-foreground);
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.workflow-title:hover {
   color: var(--vscode-textLink-activeForeground);
 }
 
-.workflow-empty {
-  color: var(--vscode-inputValidation-warningForeground);
-  font-style: italic;
-  cursor: pointer;
-  text-decoration: none;
-  background: transparent;
-  border: none;
-  padding: 0;
-  font-size: inherit;
-  font-family: inherit;
+.workflow-title-icon {
+  color: var(--vscode-textLink-foreground);
+  flex-shrink: 0;
+  font-size: 13px;
 }
 
-.workflow-empty:hover {
-  text-decoration: underline;
-  color: var(--vscode-inputValidation-warningBorder);
+.default-badge {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.workflow-nodes {
+/* Workflow Actions */
+.workflow-actions {
   display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  flex-wrap: wrap;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
 }
 
-.node-badge {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--vscode-badge-background);
-  color: var(--vscode-badge-foreground);
-  font-weight: 400;
-}
-
-.system-badge {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--vscode-badge-background);
-  color: var(--vscode-badge-foreground);
-  margin-left: 6px;
-  font-weight: 400;
-}
-
-.system-badge::before {
-  content: "🔒 ";
-}
-
-.add-btn {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  width: 28px;
-  height: 28px;
-  border-radius: 2px;
-  background-color: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+/* Workflow Metadata */
+.workflow-meta {
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 4px;
+  padding-left: 19px;
+}
+
+.step-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.step-count .codicon {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.update-time {
+  opacity: 0.6;
+}
+
+/* Workflow Steps */
+.workflow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 19px;
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--vscode-badge-background);
+  font-size: 9px;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  outline: 1px solid transparent;
-  outline-offset: 2px;
-  transition:
-    background-color 0.1s,
-    outline-color 0.1s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  font-size: 8px;
+  font-weight: 600;
 }
 
-.add-btn:hover {
-  background-color: var(--vscode-button-hoverBackground);
+.step-name {
+  color: var(--vscode-badge-foreground);
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.add-btn:focus {
-  outline-color: var(--vscode-focusBorder);
+.step-more {
+  font-size: 9px;
+  color: var(--vscode-descriptionForeground);
+  padding: 2px 4px;
 }

@@ -33,3 +33,9 @@ if (fs.existsSync(wasmSource)) {
 } else {
   console.warn(`⚠ Warning: ${wasmFile} not found at ${wasmSource}`);
 }
+
+const serverPackageJson = {
+  type: 'module',
+};
+fs.writeFileSync(path.join(destDir, 'package.json'), JSON.stringify(serverPackageJson, null, 2));
+console.log('✓ Created package.json for server dist');

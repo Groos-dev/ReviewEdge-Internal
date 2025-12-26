@@ -60,7 +60,7 @@
       }
     ],
     "configuration": {
-      "title": "MCP Code Review",
+      "title": "Code Review",
       "properties": {
         "mcpCodeReview.mainBranch": {
           "type": "string",
@@ -87,12 +87,13 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "npm run build:server && npm run build:ui && npm run build:extension && npm run copy:server && npm run copy:ui",
+    "build": "npm run clean && npm run build:server && npm run build:ui && npm run build:extension && npm run copy:server && npm run copy:ui",
     "build:server": "npm run build --workspace=../server",
     "build:ui": "npm run build --workspace=../ui",
-    "build:extension": "tsup src/extension.ts --format cjs --platform node --target node20 --external vscode --dts",
+    "build:extension": "tsup src/extension.ts --format cjs --platform node --target node20 --external vscode --dts --no-clean",
     "copy:server": "node ./scripts/copy-server.mjs",
     "copy:ui": "node ./scripts/copy-ui.mjs",
+    "clean": "rm -rf dist",
     "watch": "npm run build:extension -- --watch",
     "package": "npm run build && vsce package --no-dependencies",
     "publish": "vsce publish"
