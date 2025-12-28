@@ -1,14 +1,10 @@
 {
   "name": "mcp-codereview",
-  "displayName": "MCP Code Review",
+  "displayName": "ReviewEdge",
   "description": "AI-powered code review using Model Context Protocol. Render review comments directly in VS Code diff views.",
   "version": "1.0.0",
-  "publisher": "mcp-codereview",
+  "publisher": "groos-dev",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mcp-codereview/mcp-codereview"
-  },
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -35,7 +31,7 @@
       "activitybar": [
         {
           "id": "mcp-codereview",
-          "title": "MCP Review",
+          "title": "ReviewEdge",
           "icon": "$(code)"
         }
       ]
@@ -44,7 +40,7 @@
       "mcp-codereview": [
         {
           "id": "mcpCodeReview.sidebarView",
-          "name": "CODEREVIEW",
+          "name": "ReviewEdge",
           "type": "webview"
         }
       ]
@@ -60,7 +56,7 @@
       }
     ],
     "configuration": {
-      "title": "Code Review",
+      "title": "ReviewEdge",
       "properties": {
         "mcpCodeReview.mainBranch": {
           "type": "string",
@@ -95,8 +91,10 @@
     "copy:ui": "node ./scripts/copy-ui.mjs",
     "clean": "rm -rf dist",
     "watch": "npm run build:extension -- --watch",
-    "package": "npm run build && vsce package --no-dependencies",
-    "publish": "vsce publish"
+    "package": "npm run build && node ./scripts/vsce.mjs package --no-dependencies --allow-missing-repository",
+    "package:beta": "npm run build && node ./scripts/vsce.mjs package --no-dependencies --allow-missing-repository --pre-release",
+    "publish": "node ./scripts/vsce.mjs publish --no-dependencies --allow-missing-repository",
+    "publish:beta": "node ./scripts/vsce.mjs publish --no-dependencies --allow-missing-repository --pre-release"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

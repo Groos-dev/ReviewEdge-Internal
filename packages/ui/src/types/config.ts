@@ -19,6 +19,7 @@ export interface Workflow {
 export interface ReviewTask {
   readonly id: string;
   readonly name: string;
+  readonly workspacePath: string;
   readonly baseBranch: string;
   readonly baseCommit: string;
   readonly headBranch: string;

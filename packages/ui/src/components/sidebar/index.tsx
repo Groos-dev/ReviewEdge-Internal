@@ -49,7 +49,7 @@ const BUILTIN_WORKFLOW_IDS = {
   JAVA_FULL_REVIEW: 'java-full-review',
 } as const;
 
-const BUILTIN_WORKFLOW_ID_LIST = Object.values(BUILTIN_WORKFLOW_IDS);
+const BUILTIN_WORKFLOW_ID_LIST: readonly string[] = Object.values(BUILTIN_WORKFLOW_IDS);
 
 // Codicon component for VS Code icons
 const Icon: FC<{ name: string; className?: string }> = ({ name, className = '' }) => (

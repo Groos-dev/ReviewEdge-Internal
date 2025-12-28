@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS prompt_nodes (
 CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    workspacePath TEXT NOT NULL DEFAULT '',
     baseBranch TEXT NOT NULL,
     baseCommit TEXT NOT NULL,
     headBranch TEXT NOT NULL,

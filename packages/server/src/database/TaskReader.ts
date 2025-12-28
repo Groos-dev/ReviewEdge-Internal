@@ -107,7 +107,7 @@ export class TaskReader {
     this.dbPath = resolveDbPath(workspacePath);
 
     if (!fs.existsSync(this.dbPath)) {
-      console.log(`[TaskReader] Database not found, creating: ${this.dbPath}`);
+      console.error(`[TaskReader] Database not found, creating: ${this.dbPath}`);
       this.db = new this.SQL.Database();
       this.db.run(schemaSql);
       this.ensureBuiltinWorkflows();
@@ -118,7 +118,6 @@ export class TaskReader {
     try {
       const buffer = fs.readFileSync(this.dbPath);
       this.db = new this.SQL.Database(buffer);
-      console.log(`[TaskReader] Database loaded from: ${this.dbPath}`);
       this.db.run(schemaSql);
       this.ensureBuiltinWorkflows();
       this.save();
@@ -160,11 +159,14 @@ export class TaskReader {
     return isBuiltinWorkflow(workflowId);
   }
 
-  async getTasks(): Promise<ReviewTask[]> {
+  async getTasks(workspacePath: string): Promise<ReviewTask[]> {
     if (!this.db) return [];
 
     try {
-      const result = this.db.exec('SELECT * FROM tasks ORDER BY createdAt DESC');
+      const result = this.db.exec(
+        'SELECT * FROM tasks WHERE workspacePath = ? ORDER BY createdAt DESC',
+        [workspacePath]
+      );
       const firstResult = getFirstResult(result);
       if (!firstResult) return [];
 
@@ -173,6 +175,7 @@ export class TaskReader {
         return {
           id: obj.id as string,
           name: obj.name as string,
+          workspacePath: obj.workspacePath as string,
           baseBranch: obj.baseBranch as string,
           baseCommit: obj.baseCommit as string,
           headBranch: obj.headBranch as string,
@@ -199,6 +202,7 @@ export class TaskReader {
       return {
         id: obj.id as string,
         name: obj.name as string,
+        workspacePath: obj.workspacePath as string,
         baseBranch: obj.baseBranch as string,
         baseCommit: obj.baseCommit as string,
         headBranch: obj.headBranch as string,
@@ -227,11 +231,12 @@ export class TaskReader {
       };
 
       this.db.run(
-        `INSERT INTO tasks (id, name, baseBranch, baseCommit, headBranch, headCommit, workflowId, createdAt, updatedAt)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO tasks (id, name, workspacePath, baseBranch, baseCommit, headBranch, headCommit, workflowId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           newTask.id,
           newTask.name,
+          newTask.workspacePath,
           newTask.baseBranch,
           newTask.baseCommit,
           newTask.headBranch,

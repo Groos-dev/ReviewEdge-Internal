@@ -1,4 +1,4 @@
-# MCP Code Review
+# ReviewEdge
 
 > AI-powered code review tool using Model Context Protocol (MCP) and VSCode
 
@@ -38,8 +38,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/new-codereview-mcp.git
-cd new-codereview-mcp
+git clone git@github.com:Groos-dev/ReviewEdge-Internal.git
+cd ReviewEdge-Internal
 
 # Install dependencies
 npm install
@@ -211,7 +211,7 @@ npm run test:coverage
 ## 📁 Project Structure
 
 ```
-new-codereview-mcp/
+ReviewEdge-Internal/
 ├── packages/
 │   ├── extension/              # VSCode extension package
 │   │   ├── src/
@@ -339,8 +339,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/yourusername/new-codereview-mcp/issues)
-- **Discussions**: Ask questions and share ideas on [GitHub Discussions](https://github.com/yourusername/new-codereview-mcp/discussions)
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/Groos-dev/ReviewEdge-Internal/issues)
+- **Discussions**: Ask questions and share ideas on [GitHub Discussions](https://github.com/Groos-dev/ReviewEdge-Internal/discussions)
 
 ---
 

@@ -116,7 +116,7 @@ export class CodeReviewCore {
     this.messenger.on('task/list', async (msg: Message<ToServerProtocol['task/list']>) => {
       const { workspacePath } = msg.data;
       await this.ensureInitialized(workspacePath);
-      const tasks = await taskReader.getTasks();
+      const tasks = await taskReader.getTasks(workspacePath);
       taskReader.close();
       return { tasks };
     });
@@ -136,6 +136,7 @@ export class CodeReviewCore {
       const newTask = await taskReader.createTask({
         id: taskId,
         name: task.name,
+        workspacePath,
         baseBranch: task.baseBranch,
         baseCommit: task.baseCommit,
         headBranch: task.headBranch,

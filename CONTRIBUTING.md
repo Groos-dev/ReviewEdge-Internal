@@ -35,8 +35,8 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ```bash
 # Fork and clone the repository
-git clone https://github.com/your-username/new-codereview-mcp.git
-cd new-codereview-mcp
+git clone git@github.com:Groos-dev/ReviewEdge-Internal.git
+cd ReviewEdge-Internal
 
 # Install dependencies
 npm install
@@ -576,7 +576,7 @@ Looking for somewhere to contribute? Here are ideas:
 - **Documentation**: Improve guides and add examples
 - **Performance**: Profile and optimize bottlenecks
 - **Accessibility**: Improve keyboard navigation and screen reader support
-- **Features**: Check [GitHub Issues](https://github.com/yourusername/new-codereview-mcp/issues) for feature requests
+- **Features**: Check [GitHub Issues](https://github.com/Groos-dev/ReviewEdge-Internal/issues) for feature requests
 - **Bug Fixes**: Look for issues labeled "good first issue"
 
 ## 📧 Getting Help
