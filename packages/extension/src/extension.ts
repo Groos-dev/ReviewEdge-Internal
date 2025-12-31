@@ -43,7 +43,6 @@ const state: ExtensionState = {
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   // TODO(logging): Replace console logs with a dedicated OutputChannel + log levels.
   //   This keeps user logs clean and makes bug reports easier.
-  console.log('MCP Code Review: Starting activation');
 
   try {
     initializeServices(context);

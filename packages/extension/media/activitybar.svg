@@ -1,0 +1,43 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Code bracket { } -->
+  <path d="M18 30 C12 30, 8 34, 8 40 L8 88 C8 94, 12 98, 18 98 L22 98 L22 88 C22 82, 18 78, 12 78 L16 78 L16 50 L12 50 C18 50, 22 46, 22 40 L22 30 Z
+           M118 30 L114 30 L114 40 C114 46, 118 50, 124 50 L120 50 L120 78 L124 78 C118 78, 114 82, 114 88 L114 98 L118 98 C124 98, 128 94, 128 88 L128 40 C128 34, 124 30, 118 30 Z"
+        fill="url(#gradient1)" opacity="0.6"/>
+
+  <!-- Neural network nodes forming a large checkmark -->
+  <g>
+    <!-- Checkmark base path -->
+    <path d="M30 64 L52 86 L98 40" stroke="url(#gradient2)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Glowing effect on checkmark -->
+    <path d="M30 64 L52 86 L98 40" stroke="url(#gradient2)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+
+    <!-- Circuit-like nodes on key points -->
+    <circle cx="30" cy="64" r="6" fill="#7F5AF0"/>
+    <circle cx="30" cy="64" r="10" stroke="#7F5AF0" stroke-width="2" opacity="0.5"/>
+
+    <circle cx="52" cy="86" r="6" fill="#2CB6C2"/>
+    <circle cx="52" cy="86" r="10" stroke="#2CB6C2" stroke-width="2" opacity="0.5"/>
+
+    <circle cx="98" cy="40" r="6" fill="#7F5AF0"/>
+    <circle cx="98" cy="40" r="10" stroke="#7F5AF0" stroke-width="2" opacity="0.5"/>
+
+    <!-- Additional connecting circuit lines simulating neural connections -->
+    <path d="M42 52 L44 56 L48 54" stroke="#2CB6C2" stroke-width="2" opacity="0.7"/>
+    <path d="M80 56 L84 52 L86 56" stroke="#7F5AF0" stroke-width="2" opacity="0.7"/>
+    <path d="M60 70 L64 74 L68 72" stroke="#2CB6C2" stroke-width="2" opacity="0.7"/>
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F5AF0"/>
+      <stop offset="100%" stop-color="#2CB6C2"/>
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F5AF0"/>
+      <stop offset="50%" stop-color="#2CB6C2"/>
+      <stop offset="100%" stop-color="#7F5AF0"/>
+    </linearGradient>
+  </defs>
+</svg>

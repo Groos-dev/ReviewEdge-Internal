@@ -540,6 +540,58 @@ Type {{ to insert variables like:
 
 const NodeEditor: FC<NodeEditorProps> = ({ node, isReadonly, editorTheme, onUpdateNode }) => {
   const showPlaceholder = !node.content;
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  // Handle editor mount and configure clipboard keybindings
+  const handleEditorMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+
+    // Add custom clipboard keybindings for webview environment
+    // Copy (Cmd/Ctrl + C)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, () => {
+      const selection = editor.getSelection();
+      if (selection) {
+        const selectedText = editor.getModel()?.getValueInRange(selection);
+        if (selectedText) {
+          navigator.clipboard.writeText(selectedText);
+        }
+      }
+    });
+
+    // Cut (Cmd/Ctrl + X)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, () => {
+      const selection = editor.getSelection();
+      if (selection) {
+        const selectedText = editor.getModel()?.getValueInRange(selection);
+        if (selectedText) {
+          navigator.clipboard.writeText(selectedText);
+          editor.executeEdits('cut', [{ range: selection, text: '', forceMoveMarkers: true }]);
+        }
+      }
+    });
+
+    // Paste (Cmd/Ctrl + V)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        const selection = editor.getSelection();
+        if (selection && text) {
+          editor.executeEdits('paste', [{ range: selection, text, forceMoveMarkers: true }]);
+        }
+      } catch (err) {
+        console.error('Failed to read clipboard:', err);
+      }
+    });
+
+    // Select All (Cmd/Ctrl + A)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyA, () => {
+      const model = editor.getModel();
+      if (model) {
+        const fullRange = model.getFullModelRange();
+        editor.setSelection(fullRange);
+      }
+    });
+  }, []);
 
   return (
     <div className="node-editor">
@@ -570,6 +622,7 @@ const NodeEditor: FC<NodeEditorProps> = ({ node, isReadonly, editorTheme, onUpda
               onUpdateNode({ content: value });
             }
           }}
+          onMount={handleEditorMount}
           options={{
             readOnly: isReadonly,
             ...MONACO_EDITOR_OPTIONS,

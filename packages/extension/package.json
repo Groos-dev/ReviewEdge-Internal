@@ -22,6 +22,7 @@
     "diff",
     "git"
   ],
+  "icon": "media/icon.png",
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished"
@@ -32,7 +33,7 @@
         {
           "id": "mcp-codereview",
           "title": "ReviewEdge",
-          "icon": "$(code)"
+          "icon": "media/activitybar.svg"
         }
       ]
     },
